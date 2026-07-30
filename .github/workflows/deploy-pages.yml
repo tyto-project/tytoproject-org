@@ -23,6 +23,8 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
+      # configure-pages runs in this job and reads or creates the Pages site.
+      pages: write
     steps:
       - name: Checkout code
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -52,6 +54,10 @@ jobs:
 
       - name: Setup Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+        with:
+          # Creates the Pages site when it does not exist yet, so the first deploy
+          # does not require someone to switch Pages on in repository settings.
+          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
