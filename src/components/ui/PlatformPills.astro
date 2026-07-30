@@ -1,0 +1,36 @@
+---
+import { PLATFORMS } from "@/data/platforms";
+
+/** Row of "runs on" platform pills. Shared by HeroBrandCell and PageHero. */
+---
+
+<div class="os-platform-row platform-pills">
+  {
+    PLATFORMS.map((p) => (
+      <span class="os-pill">
+        <svg
+          class="platform-pills__icon"
+          aria-hidden="true"
+          viewBox={p.viewBox}
+          fill="currentColor"
+        >
+          <path d={p.path} />
+        </svg>
+        {p.label}
+      </span>
+    ))
+  }
+</div>
+
+<style>
+  .platform-pills {
+    justify-content: center;
+    margin-block: 1rem 0;
+  }
+
+  .platform-pills__icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+</style>

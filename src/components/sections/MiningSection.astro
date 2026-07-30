@@ -1,0 +1,67 @@
+---
+import FadeIn from "@/components/ui/FadeIn.astro";
+import { DOCS_URL } from "@/data/site";
+import ProofCardGrid, { type ProofCard } from "@/components/ui/ProofCardGrid.astro";
+
+const CARDS: readonly ProofCard[] = [
+  {
+    title: "Share verification",
+    lead: "Tyto verifies each share before acknowledging it.",
+    proof: "getWork and submitWork, with ECIP-1099 seedHash and DAG-epoch handling",
+    icon: `<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><polyline points="9 12 11 14 15 10" />`,
+  },
+  {
+    title: "Chain tip under load",
+    lead: "Tyto serves many miners from one node.",
+    proof:
+      "A mining-pool deployment profile (SNAP-serving on, tip-server sync) holds the chain tip under load",
+    icon: `<circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="3" />`,
+  },
+  {
+    title: "Snapshot distribution",
+    lead: "Pools can seed state to other operators.",
+    proof:
+      "ERA1 frozen-segment bulk import + BitTorrent bootstrap distribution turns pools into snapshot seeders for the whole network",
+    icon: `<circle cx="6" cy="6" r="2.5" /><circle cx="18" cy="6" r="2.5" /><circle cx="6" cy="18" r="2.5" /><circle cx="18" cy="18" r="2.5" /><line x1="8.2" y1="6" x2="15.8" y2="6" /><line x1="6" y1="8.2" x2="6" y2="15.8" /><line x1="18" y1="8.2" x2="18" y2="15.8" /><line x1="8.2" y1="18" x2="15.8" y2="18" />`,
+  },
+];
+---
+
+<section class="section-ty" id="mining">
+  <div class="container-ty">
+    <FadeIn>
+      <div class="mining__head">
+        <span class="cell-label">Mining</span>
+        <h2 class="section-title mining__title">Mining on a Proof-of-Work network</h2>
+        <p class="section-subtitle">
+          A pool needs a client that follows the network&apos;s fork schedule and holds the chain
+          tip under load. Mining is one of the capabilities the execution client carries, configured
+          per deployment rather than assumed.
+        </p>
+      </div>
+    </FadeIn>
+
+    <ProofCardGrid cards={CARDS} />
+
+    <FadeIn delay={300}>
+      <div class="cell-ty callout-ty">
+        <p class="callout-ty__text">
+          Deployment steps, configuration, and operator guidance for running Tyto as a mining-pool
+          node.
+        </p>
+        <a href={DOCS_URL} target="_blank" rel="noopener noreferrer" class="callout-ty__link">
+          Mining-pool deployment guide →
+        </a>
+      </div>
+    </FadeIn>
+  </div>
+</section>
+
+<style>
+  .mining__head {
+    margin-bottom: 3rem;
+  }
+  .mining__title {
+    margin-bottom: 1rem;
+  }
+</style>

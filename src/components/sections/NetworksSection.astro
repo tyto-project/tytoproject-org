@@ -1,0 +1,242 @@
+---
+import { getCollection } from "astro:content";
+import FadeIn from "@/components/ui/FadeIn.astro";
+import { groupByFamily } from "@/data/network-families";
+
+// Network facts come from the networks collection, the same source llms.txt and
+// QuickStartSection read. Family labeling and color come from the shared map so
+// this section and the guide's run step cannot drift apart.
+const networks = (await getCollection("networks")).sort((a, b) => a.data.order - b.data.order);
+const GROUPS = groupByFamily(networks.map((n) => n.data));
+
+const CONFIGURABLE = [
+  {
+    label: "PoA & consortium networks",
+    desc: "Clique/Qbft/Bor-style consensus, custom genesis and fork schedule, no source changes",
+  },
+  { label: "Sidechains", desc: "Polygon/Bor-style, with injected bridge/oracle logic" },
+  {
+    label: "Development networks",
+    desc: "Generate a genesis and stand up a private or test network from the same binary",
+  },
+  {
+    label: "L2 rollups",
+    desc: "OP-stack/Taiko-style, including rollup-specific transaction types and derivation",
+  },
+  {
+    label: "ZK-EVM & alt-consensus",
+    desc: "ZK-EVM and alt-BFT alongside PoW and PoS, including custom VMs and zk-gas schedules",
+  },
+] as const;
+---
+
+<section class="section-ty section-bordered" id="networks">
+  <div class="container-ty">
+    <FadeIn>
+      <div class="networks__head">
+        <span class="cell-label">Networks</span>
+        <h2 class="section-title networks__title">Networks Tyto runs</h2>
+        <p class="section-subtitle">
+          The production networks ship configured, each with its testnet: Ethereum Classic, the only
+          Proof-of-Work EVM network in production, and Ethereum, the largest Proof-of-Stake network.
+        </p>
+        <p class="section-subtitle">
+          They are grouped into families rather than listed flat, because the difference between
+          them is structural rather than a matter of settings. A Proof-of-Work family dispatches its
+          forks by block number and has no deposit contract; a Proof-of-Stake family dispatches by
+          timestamp and does. Grouping them means the shared code never asks which network it is
+          running, and adding a family does not mean adding a branch to everything that already
+          works.
+        </p>
+      </div>
+    </FadeIn>
+
+    <FadeIn delay={70}>
+      <div class="cell-grid-2col networks__families">
+        {
+          GROUPS.map((group) => (
+            <div class:list={["networks__group", group.modifier]}>
+              <div class="networks__group-head">
+                <div>
+                  <span class="cell-label networks__consensus">{group.consensus}</span>
+                  <h3 class="networks__family">{group.family}</h3>
+                </div>
+                <span class={group.badgeClass}>{group.badgeLabel}</span>
+              </div>
+
+              {group.networks.map((net) => (
+                <div class="networks__net">
+                  <div class="networks__net-id">
+                    {/*
+                      Inside a family column the row is already qualified by the family
+                      heading above it, so repeating the full name duplicates it: the
+                      Ethereum Classic family rendered "Ethereum Classic" as its heading
+                      and again as its first row. The primary network of a family is its
+                      mainnet, so it is labeled as one and the testnets keep their own
+                      names. This also retires the separate "Primary" chip, which said
+                      the same thing a second time.
+                    */}
+                    <span class="networks__net-name">{net.primary ? "Mainnet" : net.name}</span>
+                    {net.tags.map((tag) => (
+                      <span class="networks__net-tag">{tag}</span>
+                    ))}
+                  </div>
+                  <div class="networks__net-meta">
+                    <span class="badge-ty networks__chip">
+                      {net.chainId === 0 ? "custom" : `chain ${net.chainId}`}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))
+        }
+      </div>
+    </FadeIn>
+
+    <FadeIn delay={140}>
+      <div class="networks__configurable">
+        {
+          CONFIGURABLE.map((item) => (
+            <div class="networks__config-cell">
+              <span class="cell-label">Configurable</span>
+              <p class="networks__config-label">{item.label}</p>
+              <p class="networks__config-desc">{item.desc}</p>
+            </div>
+          ))
+        }
+      </div>
+    </FadeIn>
+
+    <FadeIn delay={200}>
+      <div class="cell-ty networks__note">
+        <p class="callout-ty__text">
+          Each family is selected per deployment. Archival storage and snapshot distribution are
+          covered on the operations page.
+        </p>
+      </div>
+    </FadeIn>
+  </div>
+</section>
+
+<style>
+  .networks__head {
+    margin-bottom: 3rem;
+  }
+  .networks__title {
+    margin-bottom: 0.75rem;
+  }
+
+  .networks__families {
+    border: 1px solid var(--border);
+    margin-bottom: 1px;
+  }
+
+  .networks__group {
+    display: flex;
+    flex-direction: column;
+  }
+  .networks__group-head {
+    padding: 1.5rem 1.75rem;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .networks__consensus {
+    color: var(--family-accent);
+  }
+
+  .networks__family {
+    font-size: 1.125rem;
+    font-weight: var(--weight-bold);
+    letter-spacing: var(--tracking-tight);
+    color: var(--family-accent);
+    margin-bottom: 0;
+  }
+
+  .networks__net {
+    padding: 1.25rem 1.75rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .networks__net-id {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .networks__net-name {
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  .networks__net-tag {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--text-subtle);
+  }
+
+  .networks__net-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.375rem;
+    flex-shrink: 0;
+  }
+
+  .networks__chip {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    white-space: nowrap;
+  }
+
+  /* Reflows rather than staying four-up at every width, and the seams are drawn
+     by adjacency instead of hardcoded indices. */
+  .networks__configurable {
+    border: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    margin-bottom: 1px;
+  }
+
+  .networks__config-cell {
+    padding: 1.5rem 1.75rem;
+  }
+  .networks__config-cell + .networks__config-cell {
+    border-top: 1px solid var(--border);
+  }
+  @media (min-width: 1000px) {
+    .networks__config-cell + .networks__config-cell {
+      border-top: none;
+      border-left: 1px solid var(--border);
+    }
+  }
+
+  .networks__config-label {
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
+    color: var(--text);
+    letter-spacing: -0.01em;
+    margin-bottom: 0.375rem;
+  }
+
+  .networks__config-desc {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--text-subtle);
+  }
+
+  .networks__note {
+    border-left: 3px solid var(--accent);
+    padding: 1.25rem 2rem;
+  }
+</style>

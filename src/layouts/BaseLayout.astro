@@ -1,0 +1,236 @@
+---
+import "@fontsource/dm-sans/400.css";
+import "@fontsource/dm-sans/500.css";
+import "@fontsource/dm-sans/600.css";
+import "@fontsource/dm-sans/700.css";
+import "@fontsource/dm-sans/800.css";
+import "@fontsource/jetbrains-mono/400.css";
+import "@fontsource/jetbrains-mono/500.css";
+import "@fontsource/jetbrains-mono/600.css";
+// Imported last of the stylesheets so the design system it pulls in keeps the
+// lowest precedence and component scoped styles win. See src/styles/global.css.
+import "@/styles/global.css";
+import { PLATFORMS } from "@/data/platforms";
+import {
+  ATTRIBUTION_ENTITIES,
+  SITE_URL,
+  ORG_URL,
+  ORGANIZATION,
+  RELEASES_URL,
+  REPO_URL,
+  SITE_DESCRIPTION,
+} from "@/data/site";
+
+interface Props {
+  title?: string;
+  description?: string;
+  /**
+   * Robots directive. Defaults to indexable. Set "noindex, follow" on a page
+   * that should not be indexed, such as the 404.
+   */
+  robots?: string;
+  /**
+   * Emit a canonical link. Off for a page whose URL is not a real address: the
+   * 404 is served at arbitrary paths and its own path does not resolve, so a
+   * self-canonical there points at a page that does not exist.
+   */
+  canonical?: boolean;
+}
+
+const CANONICAL_URL = SITE_URL;
+const SITE_TITLE = "Tyto · Scala EVM Execution Client";
+
+// Must stay in sync with --ty-green-3 in src/styles/tyto/tokens/colors.css and
+// theme_color in public/site.webmanifest.
+const THEME_COLOR = "#50a060";
+
+const {
+  title,
+  description = SITE_DESCRIPTION,
+  robots = "index, follow",
+  canonical = true,
+} = Astro.props;
+const pageTitle = title ? `${title} · Tyto` : SITE_TITLE;
+const canonicalURL = new URL(Astro.url.pathname, CANONICAL_URL).toString();
+
+// Members are derived from site.ts rather than restated, so the structured data
+// and the footer cannot disagree about who maintains the project. Each carries
+// its own URL, which is what lets a consumer resolve the entity.
+const jsonLdOrg = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: ORGANIZATION.name,
+  url: CANONICAL_URL,
+  logo: `${CANONICAL_URL}/tyto-hex-logo.png`,
+  sameAs: [ORG_URL, REPO_URL, ORGANIZATION.url],
+};
+
+const jsonLdApp = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Tyto",
+  applicationCategory: "DeveloperApplication",
+  // Derived from PLATFORMS so the two cannot disagree. Docker is filtered: it is a
+  // distribution channel, not an operatingSystem in schema.org terms.
+  operatingSystem: PLATFORMS.map((p) => p.label)
+    .filter((l) => l !== "Docker")
+    .join(", "),
+  license: "https://opensource.org/licenses/Apache-2.0",
+  description: SITE_DESCRIPTION,
+  downloadUrl: RELEASES_URL,
+  codeRepository: REPO_URL,
+  programmingLanguage: "Scala",
+  // A SoftwareApplication with no offers, rating or review is rejected for rich
+  // results with "missing field offers". The client is free, so this states a
+  // fact rather than dressing one up.
+  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+};
+
+// Declares the site itself, which is what search engines read for the site name
+// shown above a result rather than the page title.
+const jsonLdSite = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Tyto",
+  url: CANONICAL_URL,
+  publisher: { "@type": "Organization", name: ORGANIZATION.name },
+};
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {
+      /* Both schemes, dark first. The site ships a theme toggle and honors
+        prefers-color-scheme, so declaring dark alone made the user agent render
+        its own surfaces (scrollbars, form controls, the pre-paint canvas) dark
+        even for a reader who had chosen light. */
+    }
+    <meta name="color-scheme" content="dark light" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    {
+      /* Ignored by every major search engine since 2009. Kept only because it
+        costs nothing; it is not an SEO mechanism and nothing should be tuned for
+        it. Refreshed alongside the route set so it does not describe a site that
+        no longer exists. */
+    }
+    <meta
+      name="keywords"
+      content="ethereum classic, ETC, EVM, execution client, Scala, JVM, Apache Pekko, Engine API, SNAP sync, blockchain node, archive node, mining pool, QBFT, consortium chain, permissioned network, bootnode, RPC relay, MCP server, institutional"
+    />
+    <meta name="author" content={ATTRIBUTION_ENTITIES.map((e) => e.name).join(" · ")} />
+    {canonical && <link rel="canonical" href={canonicalURL} />}
+
+    <meta property="og:type" content="website" />
+    {
+      /* Gated with the canonical: both name a page by URL, so both are wrong
+        wherever the URL does not resolve. */
+    }
+    {canonical && <meta property="og:url" content={canonicalURL} />}
+    <meta property="og:site_name" content="Tyto" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={`${CANONICAL_URL}/og-tyto.png`} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:alt" content="Tyto · Multi-EVM execution client" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={`${CANONICAL_URL}/og-tyto.png`} />
+    <meta name="twitter:image:alt" content="Tyto · Multi-EVM execution client" />
+
+    <meta name="robots" content={robots} />
+    <meta name="googlebot" content={robots} />
+    <meta name="theme-color" content={THEME_COLOR} />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Tyto" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+
+    {
+      /* No SVG icon by design. Browsers prefer it over the .ico, so only add one
+        back if it is a genuine vector. */
+    }
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="icon" href="/favicon-16x16.png" sizes="16x16" type="image/png" />
+    <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLdOrg)} />
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLdApp)} />
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLdSite)} />
+
+    <script is:inline>
+      // Runs before paint to avoid a flash of the wrong theme. Must stay is:inline:
+      // bundling would defer it past first paint.
+      (function () {
+        const stored = localStorage.getItem("ty-theme");
+        if (stored === "light" || stored === "dark") {
+          document.documentElement.setAttribute("data-theme", stored);
+        }
+      })();
+    </script>
+  </head>
+  <body class="noise-overlay">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <slot />
+
+    <script>
+      // Site-wide scroll reveal. Paired with the [data-fade-in] rules in
+      // global.css; elements opt in via the FadeIn component.
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-visible");
+              io.unobserve(entry.target);
+            }
+          }
+        },
+        { threshold: 0.1, rootMargin: "0px 0px -40px 0px" },
+      );
+
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      document.querySelectorAll("[data-fade-in]").forEach((el) => {
+        if (reduceMotion) {
+          el.classList.add("is-visible");
+        } else {
+          io.observe(el);
+        }
+      });
+    </script>
+
+    <style>
+      body {
+        min-height: 100vh;
+      }
+
+      /* Kept in CSS rather than JS focus handlers so it works without scripting. */
+      .skip-link {
+        position: fixed;
+        top: -100px;
+        left: 1rem;
+        z-index: 200;
+        padding: 0.75rem 1.25rem;
+        background: var(--accent);
+        color: #fff;
+        font-weight: var(--weight-bold);
+        text-decoration: none;
+        transition: top var(--dur-fast) var(--ease-out);
+      }
+      .skip-link:focus,
+      .skip-link:focus-visible {
+        top: 1rem;
+      }
+    </style>
+  </body>
+</html>

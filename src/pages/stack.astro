@@ -1,0 +1,179 @@
+---
+import { getCollection } from "astro:content";
+import { RELEASES_URL } from "@/data/site";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import NavHeader from "@/components/sections/NavHeader.astro";
+import FooterSection from "@/components/sections/FooterSection.astro";
+import StackSection from "@/components/sections/StackSection.astro";
+import DataTable, { type DataTableColumn } from "@/components/ui/DataTable.astro";
+import FadeIn from "@/components/ui/FadeIn.astro";
+import PageHero from "@/components/ui/PageHero.astro";
+
+const MANIFEST_COLUMNS: readonly DataTableColumn[] = [
+  { label: "Layer" },
+  { label: "Library", mono: true },
+  { label: "Track", mono: true },
+];
+
+// The dependency manifest is a collection so llms.txt's Runtime Stack highlights
+// read the same rows this table renders.
+const MANIFEST_ROWS = (await getCollection("stack"))
+  .sort((a, b) => a.data.order - b.data.order)
+  .map((e) => [e.data.layer, e.data.library, e.data.track]);
+
+const CALLOUTS = [
+  "RocksDB: tracked to the latest stable release, not pinned to an old baseline.",
+  "Apache Pekko: the actor system, under Apache Software Foundation governance and Apache 2.0 throughout. It forked from Akka before that project moved to the Business Source License, so nothing here carries a source-available or commercial-use restriction.",
+  "BouncyCastle: cryptography from a library with a long audit history, rather than a reimplementation.",
+  "Scala 3 LTS: kept current with each LTS patch release.",
+  "JDK: tracked to the LTS line, upgraded as each LTS is published.",
+  "Cats Effect 3 + fs2: the effect system, tracked on its stable line.",
+] as const;
+---
+
+<BaseLayout
+  title="Runtime stack"
+  description="Every dependency Tyto ships, by layer, library and release track, with the update policy for each."
+>
+  <main>
+    <NavHeader />
+    <div id="main-content">
+      <PageHero
+        eyebrow="Runtime stack"
+        title="Every library, and how each is tracked"
+        description="The complete manifest of what Tyto depends on at runtime, by layer and by release track. Nothing here is a transitive surprise: the list is short because a dependency has to earn its place, and each one is followed on a track chosen deliberately rather than taken at whatever version happens to be newest."
+        ctas={[
+          {
+            label: "Download",
+            href: RELEASES_URL,
+            external: true,
+            primary: true,
+          },
+        ]}
+      />
+      <StackSection />
+
+      <section class="section-ty">
+        <div class="container-ty">
+          <FadeIn delay={80}>
+            <div class="stack-page__manifest">
+              <DataTable
+                caption="Full dependency manifest by layer, library and release track"
+                columns={MANIFEST_COLUMNS}
+                rows={MANIFEST_ROWS}
+                minWidth="44rem"
+              />
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={160}>
+            <div class="panel-ty">
+              <span class="cell-label">Update policy</span>
+              <ul class="stack-page__policy">
+                {CALLOUTS.map((note) => <li>{note}</li>)}
+              </ul>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty section-ty--elev">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="stack-page__head">
+              <span class="cell-label">The cost of a line</span>
+              <h2 class="section-title stack-page__title">Why the list is short</h2>
+              <p class="section-subtitle">
+                Every library above is a version to track, an advisory feed to watch, and code that
+                runs with the node's privileges. That makes the length of this list a decision
+                rather than an accumulation. A dependency earns its place by doing something that
+                would otherwise have to be written and maintained here, and something that does not
+                clear that bar is left out even when it would save an afternoon.
+              </p>
+              <p class="section-subtitle">
+                The release track column says how each one is followed. A library held to a stable
+                line takes the latest patch on that line and goes no further; one tracked to latest
+                moves with upstream. The distinction earns itself the day a fix and a breaking
+                change arrive in the same release, which is when a track chosen in advance stops
+                being an opinion and starts doing work.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <div class="stack-page__block">
+              <h3 class="stack-page__block-title">How a change to this list happens</h3>
+              <p class="stack-page__block-body">
+                A dependency change is reviewed on its own terms rather than as part of whatever
+                needed it. That is deliberate. A bump riding inside a feature branch gets the
+                attention the feature gets, which is not the attention the bump needs, so adds,
+                removals and version changes travel separately and are read on their own.
+              </p>
+              <p class="stack-page__block-body">
+                Automated update proposals are also held for a cooldown before they are raised at
+                all, so a release withdrawn or superseded within its first week never becomes a pull
+                request anyone has to evaluate. Security advisories are exempt from that hold and
+                arrive immediately, which is the one case where waiting is the more expensive
+                option.
+              </p>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+    </div>
+    <FooterSection />
+  </main>
+</BaseLayout>
+
+<style>
+  .stack-page__manifest {
+    margin-bottom: 2rem;
+  }
+
+  .stack-page__head {
+    margin-bottom: 2.5rem;
+  }
+  .stack-page__title {
+    margin-bottom: 0.75rem;
+  }
+  .stack-page__block-title {
+    font-size: var(--text-md);
+    font-weight: var(--weight-bold);
+    color: var(--text);
+    letter-spacing: -0.01em;
+    margin-bottom: 0.5rem;
+  }
+  .stack-page__block-body {
+    font-size: var(--text-base);
+    color: var(--text-muted);
+    line-height: 1.65;
+    margin-bottom: 1.25rem;
+  }
+
+  .stack-page__policy {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .stack-page__policy li {
+    position: relative;
+    padding-left: 1.5rem;
+    font-size: var(--text-base);
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  /* Generated content is not announced, so the list stays a list without an
+     aria-hidden span per item. */
+  .stack-page__policy li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-weight: var(--weight-bold);
+    font-size: 0.875rem;
+  }
+</style>

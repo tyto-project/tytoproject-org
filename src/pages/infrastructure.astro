@@ -1,0 +1,282 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import NavHeader from "@/components/sections/NavHeader.astro";
+import FooterSection from "@/components/sections/FooterSection.astro";
+import FadeIn from "@/components/ui/FadeIn.astro";
+import PageHero from "@/components/ui/PageHero.astro";
+import ProofCardGrid, { type ProofCard } from "@/components/ui/ProofCardGrid.astro";
+import DataTable, { type DataTableColumn } from "@/components/ui/DataTable.astro";
+
+// Standing up a network needs more than a client that can join one. Each of these is
+// a run mode of the same binary rather than a separate tool to install.
+const PIECES: readonly ProofCard[] = [
+  {
+    title: "Bootnodes",
+    lead: "The first peer everyone else finds.",
+    items: [
+      "Bootnode run mode, no separate binary",
+      "discv4 and discv5 with ENR records",
+      "DNS-based peer lists for rotating a set without redeploying",
+    ],
+    icon: `<circle cx="12" cy="12" r="3" /><circle cx="4" cy="6" r="2" /><circle cx="20" cy="6" r="2" /><circle cx="4" cy="18" r="2" /><circle cx="20" cy="18" r="2" /><path d="M9.5 10.5 6 7.5M14.5 10.5 18 7.5M9.5 13.5 6 16.5M14.5 13.5 18 16.5" />`,
+  },
+  {
+    title: "State serving",
+    lead: "Somewhere for new nodes to sync from.",
+    items: [
+      "SNAP serving as a role, not just SNAP receiving",
+      "Bounded by response size and wall clock so serving cannot exhaust the node",
+      "Off by default, on for server, archival and bootnode roles",
+    ],
+    icon: `<rect x="3" y="4" width="18" height="5" rx="1" /><rect x="3" y="15" width="18" height="5" rx="1" /><path d="M12 9v6M9 12h6" />`,
+  },
+  {
+    title: "RPC relay",
+    lead: "A public endpoint in front of the network.",
+    items: [
+      "Relay deployment profile with the read surface exposed",
+      "A gRPC bridge for aggregation gateways upstream of it",
+      "Pruned storage, because a relay does not need full history",
+    ],
+    icon: `<circle cx="5" cy="12" r="2.5" /><circle cx="19" cy="5" r="2.5" /><circle cx="19" cy="12" r="2.5" /><circle cx="19" cy="19" r="2.5" /><line x1="7.3" y1="12" x2="16.7" y2="6.3" /><line x1="7.3" y1="12" x2="16.7" y2="12" /><line x1="7.3" y1="12" x2="16.7" y2="17.7" />`,
+  },
+  {
+    title: "Dashboards and a faucet",
+    lead: "The parts a network needs to be usable.",
+    items: [
+      "Grafana dashboards and alerting rules that ship with the client",
+      "A faucet for distributing test funds on a network you originated",
+      "Nothing to assemble from third-party pieces",
+    ],
+    icon: `<path d="M3 3v18h18" /><polyline points="7 14 11 10 15 13 20 7" /><circle cx="20" cy="7" r="1.5" />`,
+  },
+];
+
+const STEP_COLUMNS: readonly DataTableColumn[] = [{ label: "Step" }, { label: "What it produces" }];
+
+const STEPS: readonly (readonly string[])[] = [
+  [
+    "Generate the identities",
+    "Node keys and accounts, and the genesis allocation entries they become",
+  ],
+  ["Define the network", "A genesis file: chain identity, consensus algorithm, initial validators"],
+  ["Originate it", "The first nodes, all starting from the genesis they agree on"],
+  [
+    "Make it findable",
+    "Bootnodes answering discovery and publishing signed node records, optionally over DNS",
+  ],
+  ["Make it syncable", "At least one node serving state, so a joining node has a source"],
+  ["Make it reachable", "An RPC relay for applications that will not run their own node"],
+  ["Make it observable", "Metrics, dashboards and alerts across the whole set"],
+];
+
+const ROLE_COLUMNS: readonly DataTableColumn[] = [
+  { label: "Role" },
+  { label: "What it is for" },
+  { label: "Serves state" },
+  { label: "History kept" },
+];
+
+// A role selects a composition rather than a build: sync path, whether the node
+// answers state requests, and how much history it retains.
+const ROLES: readonly (readonly string[])[] = [
+  ["Archival", "Deep history for applications and analytics", "Yes", "Full, from genesis"],
+  ["Tip server", "Serving current data to other nodes", "Yes", "To the sync pivot"],
+  ["Mining pool", "The node behind a pool", "Yes", "To the sync pivot"],
+  ["RPC relay", "A public read endpoint, pruned", "Optional", "Bounded"],
+  ["Resource-light", "A machine that is not a server", "No", "None below the anchor"],
+  ["Validator", "Proof-of-Stake block production", "Optional", "To the sync pivot"],
+  ["Bootnode", "Discovery infrastructure for the network", "Yes", "As configured"],
+];
+---
+
+<BaseLayout
+  title="Network infrastructure"
+  description="Running network infrastructure with Tyto: bootnodes, testnet origination, state serving, RPC relay, faucet and dashboards, all from the same binary."
+>
+  <main>
+    <NavHeader />
+    <div id="main-content">
+      <PageHero
+        eyebrow="Infrastructure"
+        title="Erecting a network, not only joining one"
+        description="Most of what a network needs is not the client that joins it. Tyto carries the rest of it too: bootnodes, state serving, an RPC relay, a faucet and dashboards, as run modes of the same binary rather than a collection of separate tools."
+        ctas={[
+          { label: "Consortium", href: "/consortium", primary: true },
+          { label: "Operations", href: "/operations" },
+        ]}
+      />
+
+      <section class="section-ty">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="infra__head">
+              <span class="cell-label">The pieces</span>
+              <h2 class="section-title infra__title">What a network needs besides nodes</h2>
+              <p class="section-subtitle">
+                A network with only participating nodes has no way for a new one to find it, nothing
+                to sync from, and no endpoint for applications that will not run a node themselves.
+                Those roles are usually assembled from separate projects. Here they are run modes.
+              </p>
+            </div>
+          </FadeIn>
+
+          <ProofCardGrid cards={PIECES} />
+        </div>
+      </section>
+
+      <section class="section-ty section-ty--elev">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="infra__head">
+              <span class="cell-label">Two sides of discovery</span>
+              <h2 class="section-title infra__title">Consuming discovery, and serving it</h2>
+              <p class="section-subtitle">
+                Every client consumes discovery. It dials peers it was told about, resolves a list
+                published over DNS, and reads the records other nodes publish describing themselves.
+                That is all it takes to join a network somebody else is already running.
+              </p>
+              <p class="section-subtitle">
+                Originating one needs the other side. A node has to answer discovery rather than
+                only ask it, and something has to author and publish the records that describe the
+                network before anyone can look it up: a signed node record carrying the chain
+                identity and fork position, and a DNS tree that lets the peer set be rotated without
+                touching anything that points at it.
+              </p>
+              <p class="section-subtitle">
+                Tyto does both, which is what turns a network's identity into data you publish
+                rather than a list of addresses each participant has to be handed out of band.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <div class="infra__block">
+              <h3 class="infra__block-title">Keeping the wrong peers out</h3>
+              <p class="infra__block-body">
+                A new network shares its wire protocol with every other network using the same one,
+                so discovery's first job is to not waste effort on peers from somewhere else. The
+                checks run in order before a dial is attempted: the network identifier, then the
+                genesis hash, then the fork position. A peer failing any of them is rejected before
+                a connection is opened rather than after a handshake reveals the mismatch. On a
+                network you have just originated, that is what stops its peer set filling with nodes
+                that were never going to agree with it.
+              </p>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="infra__head">
+              <span class="cell-label">Roles</span>
+              <h2 class="section-title infra__title">One binary, several jobs</h2>
+              <p class="section-subtitle">
+                A role is not a separate build or a different download. It selects a composition:
+                which sync path the node takes, whether it answers state requests from others, and
+                how much history it keeps. Each role covers one way a node takes part in a network.
+                Bootnode is listed apart, because serving discovery is infrastructure for the
+                network rather than participation in it.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <DataTable
+              caption="Node roles, and what each one composes to"
+              columns={ROLE_COLUMNS}
+              rows={ROLES}
+              minWidth="48rem"
+            />
+          </FadeIn>
+
+          <FadeIn delay={160}>
+            <p class="infra__note-text">
+              Serving state is off unless the role asks for it. A node that serves is answering
+              requests that cost it disk reads and bandwidth, so the capability is bounded by both
+              response size and elapsed time: a request that would take too long or return too much
+              is cut short rather than allowed to crowd out the node's own work.
+            </p>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty section-ty--elev">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="infra__head">
+              <span class="cell-label">Standing one up</span>
+              <h2 class="section-title infra__title">From genesis to a usable network</h2>
+              <p class="section-subtitle">
+                The order matters more than the difficulty. Each step produces something the next
+                one needs, and every one of them is the same binary under a different configuration.
+              </p>
+              <p class="section-subtitle">
+                The first step is the one most easily skipped. A network's initial accounts and node
+                identities have to exist before the genesis file that references them can be
+                written, and the client generates both: node keys, encrypted account keys, the
+                addresses derived from them, and the allocation entries that carry those addresses
+                into genesis. Getting this wrong is not recoverable by editing a config afterward,
+                because the genesis hash it produces is the network's identity.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <DataTable
+              caption="Steps in standing up a network, and what each produces"
+              columns={STEP_COLUMNS}
+              rows={STEPS}
+              minWidth="42rem"
+            />
+          </FadeIn>
+
+          <FadeIn delay={160}>
+            <div class="cell-ty callout-ty infra__note">
+              <p class="callout-ty__text">
+                This is how a development network, a testnet and a consortium chain all get built.
+                They differ in who is allowed to join and how consensus is chosen, not in the
+                infrastructure they need.
+              </p>
+              <a href="/consortium" class="callout-ty__link">Permissioned and private networks →</a>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+    </div>
+    <FooterSection />
+  </main>
+</BaseLayout>
+
+<style>
+  .infra__head {
+    margin-bottom: 3rem;
+  }
+  .infra__title {
+    margin-bottom: 0.75rem;
+  }
+  .infra__note {
+    margin-top: 2.5rem;
+  }
+  .infra__block {
+    margin-top: 2.5rem;
+  }
+  .infra__block-title {
+    font-size: var(--text-md);
+    font-weight: var(--weight-bold);
+    color: var(--text);
+    letter-spacing: -0.01em;
+    margin-bottom: 0.5rem;
+  }
+  .infra__block-body,
+  .infra__note-text {
+    font-size: var(--text-base);
+    color: var(--text-muted);
+    line-height: 1.65;
+  }
+  .infra__note-text {
+    margin-top: 2rem;
+  }
+</style>

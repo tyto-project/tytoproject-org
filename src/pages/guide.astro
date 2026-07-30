@@ -1,0 +1,27 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { DOCS_URL } from "@/data/site";
+import NavHeader from "@/components/sections/NavHeader.astro";
+import FooterSection from "@/components/sections/FooterSection.astro";
+import QuickStartSection from "@/components/sections/QuickStartSection.astro";
+import PageHero from "@/components/ui/PageHero.astro";
+---
+
+<BaseLayout
+  title="Quick Start"
+  description="Install Tyto from a platform distribution, Docker or source, then run any configured network. Node requirements, network arguments and chain IDs included."
+>
+  <main>
+    <NavHeader />
+    <div id="main-content">
+      <PageHero
+        eyebrow="Quick Start"
+        title="Installing Tyto"
+        description="Install Tyto, then start a node on the network you want. The same binary runs every network it supports, so nothing below changes except one argument."
+        ctas={[{ label: "Documentation", href: DOCS_URL, external: true }]}
+      />
+      <QuickStartSection />
+    </div>
+    <FooterSection />
+  </main>
+</BaseLayout>

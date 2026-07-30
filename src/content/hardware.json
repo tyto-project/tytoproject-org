@@ -1,0 +1,37 @@
+[
+  {
+    "id": "java",
+    "item": "Java",
+    "requirement": "Current JDK LTS (25)",
+    "note": "Any OpenJDK build of the current LTS. The Docker image bundles one.",
+    "order": 0
+  },
+  {
+    "id": "memory",
+    "item": "Memory",
+    "requirement": "8 GB minimum for the JVM heap",
+    "note": "Add headroom for each additional network run in the same process.",
+    "order": 1
+  },
+  {
+    "id": "disk-space",
+    "item": "Disk space",
+    "requirement": "Set by the network and the storage approach",
+    "note": "A pruned Ethereum mainnet node is on the order of a terabyte and grows with the chain. Ethereum Classic is substantially smaller. An archive node is a multiple of the pruned figure on either.",
+    "order": 2
+  },
+  {
+    "id": "disk-type",
+    "item": "Disk type",
+    "requirement": "SSD, and NVMe for a validator, mining pool or public RPC node",
+    "note": "State access during sync is random rather than sequential, which a spinning disk cannot keep up with.",
+    "order": 3
+  },
+  {
+    "id": "cpu",
+    "item": "CPU",
+    "requirement": "Highest while syncing, lower at the chain tip",
+    "note": "Size for the sync, then scale down on observed usage rather than on the peak.",
+    "order": 4
+  }
+]

@@ -1,0 +1,39 @@
+---
+import FadeIn from "@/components/ui/FadeIn.astro";
+---
+
+<section class="section-ty section-ty--elev" id="features">
+  <div class="container-ty">
+    <FadeIn>
+      <div class="panel-ty">
+        <span class="cell-label">Features</span>
+        <h2 class="section-title features-section__title">Protocol support</h2>
+        <p class="section-subtitle">
+          Tyto speaks the devp2p wire protocols, discv4 and discv5 discovery, and SNAP state sync,
+          which is what lets it peer with any other client on the networks it runs. The table below
+          names the versions; the prose deliberately does not, because wire protocol versions move
+          with each network's upgrade schedule and a sentence that pins them dates itself.
+        </p>
+        <p class="section-subtitle">
+          Above that sits a consensus module rather than a fixed consensus implementation. On
+          Proof-of-Work that means ETChash with ECIP-1099 epoch handling and the getWork surface a
+          mining pool calls. On Proof-of-Stake it means Engine API V1 through V4, driven either by a
+          consensus layer Tyto runs itself or by an external consensus client. On
+          Proof-of-Authority it means Clique, QBFT and Bor-style producer sets for permissioned
+          networks.
+        </p>
+        <p class="section-subtitle">
+          The API surface is JSON-RPC over HTTP, WebSocket and IPC, with GraphQL alongside it and a
+          built-in MCP server for agent tooling. Signing can be delegated to an external signer or
+          an HSM, so the node does not have to hold a key.
+        </p>
+      </div>
+    </FadeIn>
+  </div>
+</section>
+
+<style>
+  .features-section__title {
+    margin-bottom: 0.75rem;
+  }
+</style>

@@ -1,0 +1,388 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import NavHeader from "@/components/sections/NavHeader.astro";
+import FooterSection from "@/components/sections/FooterSection.astro";
+import FadeIn from "@/components/ui/FadeIn.astro";
+import PageHero from "@/components/ui/PageHero.astro";
+import DataTable, { type DataTableColumn } from "@/components/ui/DataTable.astro";
+
+// Normative references for the consensus algorithms named below. Linked rather than
+// paraphrased: the specifications are the authority on what QBFT and a permissioned
+// chain configuration mean, and they move independently of this page.
+const QBFT_SPEC_URL = "https://entethalliance.org/specs/qbft/v1/";
+const CHAINSPEC_URL = "https://entethalliance.github.io/client-spec/chainspec.html";
+
+const CONSENSUS_COLUMNS: readonly DataTableColumn[] = [
+  { label: "Algorithm" },
+  { label: "Shape" },
+  { label: "Typical use" },
+];
+
+// A permissioned network is defined by its genesis file: the consensus algorithm, the
+// initial validator set, and the addresses of the permissioning contracts.
+const GENESIS = `{
+  "config": {
+    "chainId": 1337,
+    "qbft": {
+      "blockperiodseconds": 5,
+      "epochlength": 30000,
+      "requesttimeoutseconds": 10
+    },
+    "nodePermissionContract": "0x0000...0001",
+    "transactionPermissionContract": "0x0000...0002"
+  },
+  "gasLimit": "0x1fffffffffffff",
+  "difficulty": "0x1",
+  "extraData": "0x..."
+}`;
+
+const RUN_CONSORTIUM = `tyto \\
+  --genesis-file=/etc/tyto/genesis.json \\
+  --data-path=/var/lib/tyto/consortium \\
+  --p2p-port=30303 \\
+  --rpc-http-enabled \\
+  --rpc-http-port=8545`;
+
+const CONTROL_COLUMNS: readonly DataTableColumn[] = [
+  { label: "Layer" },
+  { label: "What it decides" },
+  { label: "Where it is enforced" },
+];
+
+// Permissioning is separate controls, not one. Conflating them is the usual
+// source of confusion about what a permissioned network actually restricts.
+const CONTROLS: readonly (readonly string[])[] = [
+  [
+    "Node permissioning",
+    "Which nodes may join the network at all",
+    "At connection time, before any chain data is exchanged",
+  ],
+  [
+    "Account permissioning",
+    "Which accounts may submit transactions, and what they may call",
+    "When a transaction is accepted, and again when a block carrying it is validated",
+  ],
+  [
+    "Validator set",
+    "Which nodes may propose and seal blocks",
+    "Inside the consensus round, among nodes already admitted",
+  ],
+];
+
+const RUN_PRIVATE = `tyto \\
+  --genesis-file=/etc/tyto/genesis.json \\
+  --data-path=/var/lib/tyto/consortium \\
+  --discovery-enabled=false \\
+  --static-nodes-file=/etc/tyto/static-nodes.json \\
+  --min-gas-price=0 \\
+  --rpc-http-enabled`;
+
+const CONSENSUS: readonly (readonly string[])[] = [
+  [
+    "QBFT",
+    "Byzantine fault tolerant, known validator set",
+    "Consortium chains needing fast finality",
+  ],
+  ["Clique", "Proof of Authority, signer rotation", "Development and single-operator networks"],
+  ["Bor-style", "Proof of Authority with a producer set", "Sidechain and app-chain deployments"],
+];
+---
+
+<BaseLayout
+  title="Private and permissioned networks"
+  description="Permissioned networks with Tyto: QBFT, Clique and Bor-style consensus per deployment, immediate finality, and node, account and validator permissioning."
+>
+  <main>
+    <NavHeader />
+    <div id="main-content">
+      <PageHero
+        eyebrow="Consortium"
+        title="A private network is a configuration"
+        description="Tyto runs a permissioned network from the same binary as a public one, with the consensus algorithm chosen per deployment rather than compiled in. Who may join and who may transact are enforced against contracts you deploy and control. Both networks can run side by side in one process, isolated from each other."
+        ctas={[
+          { label: "Architecture", href: "/architecture", primary: true },
+          { label: "Networks", href: "/networks" },
+        ]}
+      />
+
+      <section class="section-ty">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="cons__head">
+              <span class="cell-label">The seam</span>
+              <h2 class="section-title cons__title">Choosing a consensus algorithm</h2>
+              <p class="section-subtitle">
+                Consensus sits behind one interface in Tyto's top layer, chosen per deployment.
+                The same property that lets a node run Proof-of-Work on one network and
+                Proof-of-Stake on another lets it run a Proof-of-Authority network with a known
+                validator set, from the same binary and in the same process.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <DataTable
+              caption="Proof-of-Authority consensus algorithms hosted by the consensus module"
+              columns={CONSENSUS_COLUMNS}
+              rows={CONSENSUS}
+              minWidth="40rem"
+            />
+          </FadeIn>
+
+          <FadeIn delay={160}>
+            <div class="cell-ty callout-ty cons__specs">
+              <p class="callout-ty__text">
+                QBFT and permissioned chain configuration are specified externally. These are the
+                normative references for what the algorithm and the genesis configuration require.
+              </p>
+              <a
+                href={QBFT_SPEC_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="callout-ty__link">QBFT Consensus Protocol specification →</a
+              >
+              <a
+                href={CHAINSPEC_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="callout-ty__link">Permissioned Blockchains specification →</a
+              >
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty section-ty--elev">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="cons__head">
+              <span class="cell-label">The controls</span>
+              <h2 class="section-title cons__title">What permissioned actually restricts</h2>
+              <p class="section-subtitle">
+                Permissioned is not one switch. Separate questions get separate answers, and a
+                network can be strict about one while being open about another. Treating them as a
+                single setting is the usual source of confusion about what a private network is
+                actually protecting.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <DataTable
+              caption="The permissioning controls and where each takes effect"
+              columns={CONTROL_COLUMNS}
+              rows={CONTROLS}
+              minWidth="44rem"
+            />
+          </FadeIn>
+
+          <FadeIn delay={160}>
+            <p class="cons__note">
+              A node admitted to the network is not thereby allowed to transact, and an account
+              allowed to transact is not thereby allowed to produce blocks. Deciding each one
+              deliberately is what separates a consortium chain from a public network with a
+              firewall in front of it.
+            </p>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="cons__head">
+              <span class="cell-label">Finality</span>
+              <h2 class="section-title cons__title">When a block stops being provisional</h2>
+              <p class="section-subtitle">
+                Proof-of-Work settles probabilistically. A block becomes harder to reverse as work
+                accumulates on top of it, so an application decides how many confirmations it will
+                wait for, and that number is a risk judgment rather than a fact about the chain.
+              </p>
+              <p class="section-subtitle">
+                A Byzantine fault tolerant algorithm settles differently. A QBFT block is final once
+                it is committed: a supermajority of a known validator set has signed it, there is no
+                competing chain for a node to switch to, and no reorganization can follow. One
+                confirmation is settlement, and an application on the network needs no confirmation
+                policy at all.
+              </p>
+              <p class="section-subtitle">
+                The trade is the assumption that buys it. Immediate finality requires a known
+                validator set with enough of it reachable to agree: the algorithm tolerates fewer
+                than a third of its validators being faulty or unreachable, and stops producing
+                blocks beyond that, where a Proof-of-Work network with the same fraction offline
+                keeps going and simply produces blocks more slowly. A consortium chain therefore
+                treats validator availability as an operational requirement rather than as a
+                background property it can assume.
+              </p>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty section-ty--elev">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="cons__head">
+              <span class="cell-label">Alongside, not instead</span>
+              <h2 class="section-title cons__title">
+                Running a private and a public network together
+              </h2>
+              <p class="section-subtitle">
+                Each network Tyto runs is isolated: its own state, its own metrics registry, its
+                own configuration, supervised independently. A consortium chain and a public network
+                can therefore run in one process without sharing storage or contending for the same
+                dispatchers, which is one deployment to secure and audit instead of two.
+              </p>
+              <p class="section-subtitle">
+                The separation holds at the chain identifier as well as in storage. A transaction
+                signed for one network carries that network's identifier and is rejected on the
+                other, so the two cannot bleed into each other by accident. Choosing an identifier
+                no public network already uses is part of defining a private chain, and it is what
+                stops a signature made on a consortium chain from ever replaying somewhere real.
+              </p>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="cons__head">
+              <span class="cell-label">Configuration</span>
+              <h2 class="section-title cons__title">Defining the network</h2>
+              <p class="section-subtitle">
+                A permissioned network is defined by its genesis file rather than by build flags:
+                the consensus algorithm and its parameters, the initial validator set, and the
+                addresses of the permissioning contracts deployed at genesis. Nodes read the same
+                file, which is what makes them the same network.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <div class="cons__block">
+              <h3 class="cons__block-title">Genesis</h3>
+              <pre class="code-block"><code>{GENESIS}</code></pre>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={160}>
+            <div class="cons__block">
+              <h3 class="cons__block-title">Starting a node on it</h3>
+              <pre class="code-block"><code>{RUN_CONSORTIUM}</code></pre>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={240}>
+            <div class="cell-ty callout-ty cons__block">
+              <p class="callout-ty__text">
+                Permissioning is enforced by the client against contracts deployed at genesis, so
+                changing who may connect or transact is a contract call rather than a restart. Those
+                contracts are the network operator's to write, audit and secure, and they carry
+                their own security-certification obligations independent of the client.
+              </p>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty section-ty--elev">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="cons__head">
+              <span class="cell-label">Operating it</span>
+              <h2 class="section-title cons__title">What changes after genesis</h2>
+              <p class="section-subtitle">
+                A genesis file fixes how the network starts, not how it stays. Several things move
+                afterward, and each moves by a different mechanism.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <div class="cons__block">
+              <h3 class="cons__block-title">The validator set</h3>
+              <p class="cons__body">
+                The validators named in genesis are the starting set rather than a permanent one.
+                QBFT specifies a vote: existing validators propose an addition or a removal, and the
+                result takes effect at an epoch boundary rather than the moment it passes, so every
+                node applies the same set at the same block. What the vote requires is in the
+                specification linked above, because it is a property of the algorithm rather than of
+                any client implementing it.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={160}>
+            <div class="cons__block">
+              <h3 class="cons__block-title">How nodes find each other</h3>
+              <p class="cons__body">
+                A public network's nodes discover peers by broadcasting. A permissioned network
+                usually does not want to be discoverable at all, so discovery is turned off and each
+                node is given the addresses of the others directly. Discovery and permissioning are
+                separate controls doing different jobs: one decides who can be found, the other
+                decides who is admitted, and a private network normally wants both.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={240}>
+            <div class="cons__block">
+              <h3 class="cons__block-title">What gas is for</h3>
+              <p class="cons__body">
+                A public network prices gas to ration block space among anonymous senders competing
+                for it. A permissioned network has already decided who may transact, so there is no
+                bidding to arbitrate, and many run with the price floor at zero. Gas then stops
+                being a cost and goes back to being a resource limit: the block gas limit in genesis
+                is the real control over how much work a block may carry, and a runaway contract is
+                bounded by it rather than by what someone was willing to pay.
+              </p>
+              <pre class="code-block"><code>{RUN_PRIVATE}</code></pre>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+    </div>
+    <FooterSection />
+  </main>
+</BaseLayout>
+
+<style>
+  .cons__head {
+    margin-bottom: 3rem;
+  }
+  .cons__title {
+    margin-bottom: 0.75rem;
+  }
+  .cons__block {
+    margin-top: 2rem;
+  }
+  .cons__block-title {
+    font-size: var(--text-md);
+    font-weight: var(--weight-bold);
+    color: var(--text);
+    letter-spacing: -0.01em;
+    margin-bottom: 0.75rem;
+  }
+  .cons__note {
+    margin-top: 2rem;
+    font-size: var(--text-base);
+    color: var(--text-subtle);
+    line-height: 1.65;
+  }
+  .cons__body {
+    font-size: var(--text-base);
+    color: var(--text-muted);
+    line-height: 1.65;
+    margin-bottom: 1.25rem;
+  }
+
+  .cons__specs {
+    margin-top: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+</style>

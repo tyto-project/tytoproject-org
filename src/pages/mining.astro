@@ -1,0 +1,216 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import NavHeader from "@/components/sections/NavHeader.astro";
+import FooterSection from "@/components/sections/FooterSection.astro";
+import FadeIn from "@/components/ui/FadeIn.astro";
+import PageHero from "@/components/ui/PageHero.astro";
+import DataTable, { type DataTableColumn } from "@/components/ui/DataTable.astro";
+import MiningSection from "@/components/sections/MiningSection.astro";
+
+// A pool talks to the node over JSON-RPC, so the RPC surface has to be enabled and
+// reachable from the pool process, and the coinbase has to be set for the blocks the
+// node builds.
+const RUN_MINING = `tyto --network=etc \\
+  --miner-enabled \\
+  --miner-coinbase=0xYourPayoutAddress \\
+  --rpc-http-enabled \\
+  --rpc-http-port=8545 \\
+  --rpc-http-api=ETH,NET,WEB3`;
+
+const RPC_COLUMNS: readonly DataTableColumn[] = [
+  { label: "Method", mono: true },
+  { label: "What the pool does with it" },
+];
+
+const RPC_METHODS: readonly (readonly string[])[] = [
+  [
+    "eth_getWork",
+    "Pulls the current header hash, seed hash and boundary for the block being built",
+  ],
+  ["eth_submitWork", "Submits a nonce and mix digest; the node verifies before acknowledging"],
+  ["eth_coinbase", "Reads back the configured payout address"],
+  ["eth_blockNumber", "Tracks the chain tip to detect a stale template"],
+];
+---
+
+<BaseLayout
+  title="Mining"
+  description="Running Tyto as the node behind a mining pool: enabling the miner, the getWork and submitWork surface, and ECIP-1099 epoch handling."
+>
+  <main>
+    <NavHeader />
+    <div id="main-content">
+      <PageHero
+        eyebrow="Mining"
+        title="The node behind the hashpower"
+        description="Tyto assembles the block candidates a pool hands to its miners, verifies the shares that come back, and follows Ethereum Classic's own Proof-of-Work rules rather than Ethereum's. The interface is standard JSON-RPC, so an existing pool needs no client-specific integration. Mining stays off until it is switched on."
+        ctas={[
+          { label: "Quick Start", href: "/guide", primary: true },
+          { label: "Energy", href: "/energy" },
+        ]}
+      />
+
+      <MiningSection />
+
+      <section class="section-ty">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="mine__head">
+              <span class="cell-label">Division of labor</span>
+              <h2 class="section-title mine__title">What the node does, and what the rigs do</h2>
+              <p class="section-subtitle">
+                Hashpower lives outside the node. Rigs and pools own it, and the node's job is to
+                decide what should be hashed and to judge what comes back.
+              </p>
+              <p class="section-subtitle">
+                For each candidate block the node assembles the transaction set, computes the header
+                the miners hash against, and hands out that header hash together with the seed hash
+                for the current epoch and the difficulty boundary a solution has to meet. A miner
+                that finds a nonce submits it back, and the node verifies the solution before
+                acknowledging it rather than accepting it and discovering the problem later.
+              </p>
+              <p class="section-subtitle">
+                The chain tip moves while all this is happening. A template built on a block that
+                has since been replaced is stale, and work submitted against it cannot be accepted
+                no matter how good the solution is. That is why a pool tracks the tip closely, and
+                why the node treats work older than a bounded threshold as expired instead of
+                pretending it can still be used.
+              </p>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty section-ty--elev">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="mine__head">
+              <span class="cell-label">Configuration</span>
+              <h2 class="section-title mine__title">Enabling the miner</h2>
+              <p class="section-subtitle">
+                Mining is off by default. Turning it on needs two things: the miner itself, and a
+                coinbase address for the blocks this node builds. A pool additionally needs the
+                JSON-RPC surface reachable from wherever the pool process runs.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <pre class="code-block"><code>{RUN_MINING}</code></pre>
+          </FadeIn>
+
+          <FadeIn delay={160}>
+            <p class="mine__note">
+              Proof-of-Work needs no consensus layer, so this is the whole deployment. Every
+              configured Proof-of-Work network takes the same flags, with a different network
+              argument.
+            </p>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="mine__head">
+              <span class="cell-label">Pool interface</span>
+              <h2 class="section-title mine__title">The methods a pool calls</h2>
+              <p class="section-subtitle">
+                These are standard Ethereum JSON-RPC methods, so an existing pool does not need a
+                Tyto-specific integration. Shares are verified before they are acknowledged, which
+                means a rejected share is rejected at submission rather than discovered later.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <DataTable
+              caption="JSON-RPC methods a mining pool calls against the node"
+              columns={RPC_COLUMNS}
+              rows={RPC_METHODS}
+              minWidth="40rem"
+            />
+          </FadeIn>
+
+          <FadeIn delay={160}>
+            <div class="cell-ty callout-ty mine__callout">
+              <p class="callout-ty__text">
+                ECIP-1099 doubled the DAG epoch length on Ethereum Classic, from 30,000 blocks to
+                60,000. Epochs therefore advance half as often and the DAG grows at half the rate,
+                which is what keeps it within reach of cards that would otherwise have been priced
+                out of the network by memory alone. The seed hash a miner receives has to follow
+                that schedule rather than Ethereum's, and the node handles it, so a pool reads the
+                correct seed hash straight off eth_getWork with nothing to configure.
+              </p>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty section-ty--elev">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="mine__head">
+              <span class="cell-label">Chain security</span>
+              <h2 class="section-title mine__title">Why depth costs more than work</h2>
+              <p class="section-subtitle">
+                A Proof-of-Work chain is defended by the cost of out-computing it, and that cost is
+                not a constant. Hashpower can be rented by the hour, so a network holding a minority
+                of the hashrate available for its algorithm is, on accumulated work alone, reachable
+                by anyone willing to rent enough of it briefly.
+              </p>
+              <p class="section-subtitle">
+                Ethereum Classic answers that by making depth expensive. Under ECIP-1100 a competing
+                branch is not judged on accumulated work alone: the further back it forks from what
+                the node has already accepted, the more work it has to carry before it will be
+                adopted at all. A shallow reorganization behaves as it always did, while a deep one
+                stops being something an attacker can rent for an afternoon. Tyto implements the
+                rule, so a node following the chain resolves branches the way the rest of the
+                network does rather than on a weaker test of its own.
+              </p>
+              <p class="section-subtitle">
+                Difficulty carries its own history. The bomb that was designed to force a transition
+                away from Proof-of-Work was delayed and then removed on Ethereum Classic, and a
+                client validating the chain from genesis has to reproduce the difficulty each of
+                those rules produced at the height where it applied. The node carries them as a
+                ladder rather than a single setting, because the old blocks are still there and
+                still have to come out right.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <div class="cell-ty callout-ty mine__callout">
+              <p class="callout-ty__text">
+                A network you have only just originated has no rigs pointed at it yet. For that case
+                the node can seal its own blocks on the CPU, which is enough to move a development
+                or test chain forward. It is not a production arrangement: on a live network the
+                hashrate is the security, and a CPU is not it.
+              </p>
+              <a href="/infrastructure" class="callout-ty__link">Standing up a network →</a>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+    </div>
+    <FooterSection />
+  </main>
+</BaseLayout>
+
+<style>
+  .mine__head {
+    margin-bottom: 2.5rem;
+  }
+  .mine__title {
+    margin-bottom: 0.75rem;
+  }
+  .mine__note {
+    margin-top: 1.25rem;
+    font-size: var(--text-base);
+    color: var(--text-subtle);
+    line-height: 1.65;
+  }
+  .mine__callout {
+    margin-top: 2rem;
+  }
+</style>

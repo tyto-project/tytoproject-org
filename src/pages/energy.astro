@@ -1,0 +1,352 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import NavHeader from "@/components/sections/NavHeader.astro";
+import FooterSection from "@/components/sections/FooterSection.astro";
+import FadeIn from "@/components/ui/FadeIn.astro";
+import PageHero from "@/components/ui/PageHero.astro";
+import DataTable, { type DataTableColumn } from "@/components/ui/DataTable.astro";
+import ProofCardGrid, { type ProofCard } from "@/components/ui/ProofCardGrid.astro";
+
+const DAO_ENERGY_URL = "https://ethereumclassicdao.org/environmental-impact";
+
+// One node serves a whole site. It feeds work to the miners and validates what comes
+// back, so it is a modest machine next to the hardware drawing the power.
+const SITE_NODE = `tyto --network=etc \\
+  --miner-enabled \\
+  --miner-coinbase=0xYourPayoutAddress \\
+  --data-path=/var/lib/tyto \\
+  --rpc-http-enabled \\
+  --metrics-enabled \\
+  --metrics-port=9545`;
+
+const SITE_COLUMNS: readonly DataTableColumn[] = [
+  { label: "Source" },
+  { label: "Why the energy has no market" },
+];
+
+const SITES: readonly (readonly string[])[] = [
+  ["Remote hydroelectric", "Generation with no transmission link to a market"],
+  ["Flared wellhead gas", "Associated gas burned off for want of a pipeline"],
+  ["Curtailed wind and solar", "Production exceeding what the grid can take at that moment"],
+  ["Off-peak industrial", "Contracted capacity sitting unused between shifts"],
+  ["Landfill gas", "Methane that would otherwise be vented or flared"],
+  ["Geothermal", "Resource in a region without transmission"],
+  ["Overnight baseload", "Output from plant that cannot economically follow demand down"],
+];
+
+const SITING_COLUMNS: readonly DataTableColumn[] = [
+  { label: "Arrangement" },
+  { label: "Where the power comes from" },
+];
+
+const SITING: readonly (readonly string[])[] = [
+  [
+    "Behind the meter",
+    "The miners sit on the generator's side of the connection point, so the power never enters the transmission network and never clears a market price.",
+  ],
+  [
+    "Islanded",
+    "No grid connection at all. The generation and the load are the entire system, which is the usual arrangement at a flare stack or a river with no line to anywhere.",
+  ],
+  [
+    "Grid-connected",
+    "The miners buy from the market like any other consumer, so the economics come from when they run rather than from where they sit.",
+  ],
+];
+
+const HEAT_COLUMNS: readonly DataTableColumn[] = [
+  { label: "Where the heat goes" },
+  { label: "What that use needs from it" },
+];
+
+const HEAT: readonly (readonly string[])[] = [
+  ["Greenhouses", "Warm air moved directly into the growing space, with no intermediate loop"],
+  ["Aquaculture", "Water held at a steady temperature through the year"],
+  ["Timber and crop drying", "Low-grade heat and airflow, tolerant of interruption"],
+  [
+    "District and building heat",
+    "A fluid loop warm enough to be worth circulating, which is what immersion cooling produces",
+  ],
+  ["Industrial preheat", "A feed that lowers how far a boiler has to raise its input"],
+];
+
+const GRID_ROLES: readonly ProofCard[] = [
+  {
+    title: "Demand response",
+    lead: "Load that answers a price signal in seconds.",
+    proof: "Curtailment is a process shutdown, not a production loss to be scheduled around",
+    icon: `<polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />`,
+  },
+  {
+    title: "Buyer of last resort",
+    lead: "A market that arrives at the generation.",
+    proof: "Co-locates with the source instead of requiring the source to reach a market",
+    icon: `<path d="M3 3v18h18" /><polyline points="7 14 11 10 15 13 20 7" />`,
+  },
+  {
+    title: "Methane conversion",
+    lead: "Combustion instead of venting.",
+    proof: "Converts vented methane to CO2 combustion at the wellhead or the landfill",
+    icon: `<path d="M12 22c4-3 6-6 6-10a6 6 0 0 0-12 0c0 4 2 7 6 10z" /><circle cx="12" cy="12" r="2" />`,
+  },
+  {
+    title: "Anchor load",
+    lead: "The first customer that makes a build viable.",
+    proof: "Provides the initial offtake a remote generation project needs to finance construction",
+    icon: `<circle cx="12" cy="6" r="3" /><line x1="12" y1="9" x2="12" y2="20" /><path d="M6 14a6 6 0 0 0 12 0" />`,
+  },
+];
+---
+
+<BaseLayout
+  title="Mining and energy"
+  description="Proof-of-Work as energy infrastructure: programmable demand, stranded generation, siting, grid roles, heat recovery, and what a node at such a site does."
+>
+  <main>
+    <NavHeader />
+    <div id="main-content">
+      <PageHero
+        eyebrow="Energy"
+        title="Load that moves to the power"
+        description="Mining hardware is modular, it can be installed where the power is, and it can be switched off in seconds. That lets it take generation no other buyer can reach, and give the power back the moment it is worth more elsewhere. Tyto is the node that runs at those sites."
+        ctas={[
+          { label: "Mining setup", href: "/mining", primary: true },
+          { label: "Quick Start", href: "/guide" },
+        ]}
+      />
+
+      <section class="section-ty">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="energy__head">
+              <span class="cell-label">The load</span>
+              <h2 class="section-title energy__title">
+                How mining differs from other industrial load
+              </h2>
+              <p class="section-subtitle">
+                Most large electricity consumers sign long-term supply agreements and build fixed
+                plant in one place. Mining hardware is modular and can be moved, and it can be
+                switched off in seconds. That means it can be installed at a generation site rather
+                than requiring the power to reach a market first.
+              </p>
+              <p class="section-subtitle">
+                Nothing is delivered to a mining site and nothing is shipped out of one. What goes
+                in is electricity and what comes back out is heat, so the location is not
+                constrained by roads, feedstock or distance to a customer, and can be chosen on the
+                power alone.
+              </p>
+              <p class="section-subtitle">
+                Most industrial load is firm: interrupting it spoils a batch, damages a process or
+                idles a shift that still has to be paid. Stopping a miner costs only the revenue it
+                would have earned while it was off, and it returns to full output as soon as the
+                power does. That asymmetry is what makes the load worth contracting as curtailable
+                rather than merely tolerable.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <DataTable
+              caption="Stranded generation sources and why the energy has no market"
+              columns={SITE_COLUMNS}
+              rows={SITES}
+              minWidth="34rem"
+            />
+          </FadeIn>
+
+          <FadeIn delay={160}>
+            <div class="energy__block">
+              <h3 class="energy__block-title">How a site connects</h3>
+              <p class="energy__block-body">
+                Where a site sits relative to the meter decides which costs it carries. Power that
+                never enters the transmission network avoids the charges for moving it and the price
+                it would have had to clear, which is why a behind-the-meter site can run on
+                generation that would be worthless delivered anywhere else. A grid-connected site
+                pays the market like everyone else and earns its margin by choosing its hours.
+              </p>
+              <DataTable
+                caption="How a mining site relates to the grid"
+                columns={SITING_COLUMNS}
+                rows={SITING}
+                minWidth="34rem"
+              />
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty section-ty--elev">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="energy__head">
+              <span class="cell-label">On the grid</span>
+              <h2 class="section-title energy__title">What a flexible load does for a grid</h2>
+              <p class="section-subtitle">
+                Mining is profitable when the block reward is worth more than the power it consumes.
+                Miners therefore expand where power is cheap and shut down where it is not, without
+                anyone coordinating it.
+              </p>
+            </div>
+          </FadeIn>
+
+          <ProofCardGrid cards={GRID_ROLES} />
+        </div>
+      </section>
+
+      <section class="section-ty">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="energy__head">
+              <span class="cell-label">The second output</span>
+              <h2 class="section-title energy__title">The heat is not waste unless you waste it</h2>
+              <p class="section-subtitle">
+                Almost all the electricity a miner draws leaves again as heat. On an air-cooled site
+                that heat is pushed out of the building and lost. Captured instead, it makes the
+                same power do two jobs, and it changes which sites are viable: a location that
+                cannot pay for itself on the power price alone can work when the heat has a buyer.
+              </p>
+              <p class="section-subtitle">
+                What the heat is worth depends on how it is collected. Air cooling produces a large
+                volume of slightly warm air, which is useful next to the machines and hard to move
+                any distance. Immersion cooling collects the same energy in a fluid loop at a
+                temperature worth pumping somewhere else, which is what puts the uses further down
+                this list within reach.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <DataTable
+              caption="Uses for the heat a site produces"
+              columns={HEAT_COLUMNS}
+              rows={HEAT}
+              minWidth="34rem"
+            />
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty section-ty--elev">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="energy__head">
+              <span class="cell-label">The client</span>
+              <h2 class="section-title energy__title">Where Tyto fits</h2>
+              <p class="section-subtitle">
+                Everything above describes Proof-of-Work mining and Ethereum Classic, not any
+                particular client. Tyto is the execution client that runs at those sites, and
+                mining is one capability it can be configured with.
+              </p>
+              <p class="section-subtitle">
+                A site's hardware, power agreement and cooling are decided once and change slowly.
+                The client is the part that has to keep pace, because the network's fork schedule
+                does not wait for the site to be ready for it.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <div class="cell-ty callout-ty">
+              <p class="callout-ty__text">
+                The full argument for Proof-of-Work as energy infrastructure, including network
+                figures, is maintained by the Ethereum Classic DAO.
+              </p>
+              <a
+                href={DAO_ENERGY_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="callout-ty__link">Proof-of-Work and energy, at ethereumclassicdao.org →</a
+              >
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={160}>
+            <div class="energy__block">
+              <h3 class="energy__block-title">What a site actually runs</h3>
+              <p class="energy__block-body">
+                The node is not the load. Mining hardware draws the power; the node feeds it work
+                and validates what comes back, which is a modest machine by comparison. One node
+                serves a whole site, so the sizing question is about the network connection and the
+                disk rather than the compute.
+              </p>
+              <pre class="code-block"><code>{SITE_NODE}</code></pre>
+              <p class="energy__block-body energy__block-body--after">
+                A site with intermittent power benefits from the node living somewhere with a stable
+                connection rather than behind the same breaker as the miners, so it keeps its peers
+                and its chain tip across a curtailment event instead of resyncing after each one.
+                The node draws a rounding error next to the machines it feeds, so keeping it out of
+                the shutdown costs almost nothing and saves the whole restart.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={200}>
+            <div class="energy__block">
+              <h3 class="energy__block-title">The uplink, not the compute, is the limit</h3>
+              <p class="energy__block-body">
+                Miners ask the node for work across the local network, so once the node is at the
+                tip the work loop never leaves the site. What the uplink carries is the node keeping
+                up with the chain and submitting what the site finds, which is a small and steady
+                requirement rather than a large one. That is why a cellular or satellite link can
+                serve a site that would not support a general-purpose datacenter.
+              </p>
+              <p class="energy__block-body">
+                It also changes what an outage costs. With the node on site, a brief loss of the
+                uplink does not stop the miners, because work assembly is local; the real limit is
+                how long you are willing to keep mining on a tip the node has not been able to
+                refresh. Miners pointed at a pool somewhere else stop the moment the link does.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={240}>
+            <div class="energy__block">
+              <h3 class="energy__block-title">What tells you the power was converted</h3>
+              <p class="energy__block-body">
+                Two numbers answer that: how many submitted shares were accepted, and how old the
+                node's view of the chain is. Together they separate a site that stopped earning
+                because the power went away from one that stopped earning while the power was still
+                flowing. Both come from the metrics endpoint the node already exposes, and scraping
+                it is covered under <a class="energy__link" href="/operations">operations</a>.
+              </p>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+    </div>
+    <FooterSection />
+  </main>
+</BaseLayout>
+
+<style>
+  .energy__head {
+    margin-bottom: 3rem;
+  }
+  .energy__title {
+    margin-bottom: 0.75rem;
+  }
+  .energy__block {
+    margin-top: 2.5rem;
+  }
+  .energy__block-title {
+    font-size: var(--text-md);
+    font-weight: var(--weight-bold);
+    color: var(--text);
+    letter-spacing: -0.01em;
+    margin-bottom: 0.5rem;
+  }
+  .energy__block-body {
+    font-size: var(--text-base);
+    color: var(--text-muted);
+    line-height: 1.65;
+    margin-bottom: 1.25rem;
+  }
+  .energy__block-body--after {
+    margin-block: 1.25rem 0;
+  }
+  .energy__link {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+</style>

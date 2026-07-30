@@ -1,0 +1,63 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import NavHeader from "@/components/sections/NavHeader.astro";
+import FooterSection from "@/components/sections/FooterSection.astro";
+import { ROUTES } from "@/data/site";
+
+// Previously `Astro.redirect("/", 302)`, which in static output emits a
+// meta-refresh stub that bounces to the home page after a visible delay. A real
+// page keeps the URL, keeps the site chrome, and gives the reader somewhere to go.
+---
+
+<BaseLayout
+  title="Page not found"
+  description="That page does not exist on tytoproject.org. Jump to the quick start, the feature surface, or the architecture overview."
+  robots="noindex, follow"
+  canonical={false}
+>
+  <main>
+    <NavHeader />
+    <div id="main-content">
+      <section class="section-ty">
+        <div class="container-ty">
+          <div class="panel-ty not-found">
+            <span class="cell-label">404</span>
+            <h1 class="section-title not-found__title">Page not found</h1>
+            <p class="section-subtitle not-found__body">
+              The link may be out of date, or the page may have moved. Everything below is still
+              where you would expect it.
+            </p>
+
+            <nav class="not-found__routes" aria-label="Site sections">
+              {
+                ROUTES.map((route) => (
+                  <a href={route.path} class="btn-ty">
+                    {route.label}
+                  </a>
+                ))
+              }
+            </nav>
+          </div>
+        </div>
+      </section>
+    </div>
+    <FooterSection />
+  </main>
+</BaseLayout>
+
+<style>
+  .not-found {
+    max-width: 60ch;
+  }
+  .not-found__title {
+    margin-bottom: 0.75rem;
+  }
+  .not-found__body {
+    margin-bottom: 2rem;
+  }
+  .not-found__routes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+</style>

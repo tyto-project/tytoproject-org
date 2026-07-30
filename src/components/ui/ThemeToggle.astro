@@ -1,0 +1,112 @@
+---
+/**
+ * Dark/light theme switch.
+ *
+ * Which icon shows is decided entirely in CSS from the `data-theme` attribute on
+ * <html>, so it is correct on first paint and stays correct if the script fails.
+ * The script only flips the attribute, persists the choice, and keeps the label
+ * accurate.
+ */
+---
+
+<button
+  class="icon-btn theme-toggle"
+  aria-label="Switch to light theme"
+  title="Switch to light theme"
+>
+  <svg
+    class="theme-toggle-icon theme-toggle-sun"
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="4"></circle>
+    <line x1="12" y1="2" x2="12" y2="6"></line>
+    <line x1="12" y1="18" x2="12" y2="22"></line>
+    <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+    <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+    <line x1="2" y1="12" x2="6" y2="12"></line>
+    <line x1="18" y1="12" x2="22" y2="12"></line>
+    <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+    <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+  </svg>
+  <svg
+    class="theme-toggle-icon theme-toggle-moon"
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+  </svg>
+</button>
+
+<script>
+  type Theme = "dark" | "light";
+
+  function activeTheme(): Theme {
+    const set = document.documentElement.getAttribute("data-theme");
+    if (set === "light" || set === "dark") return set;
+    return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+  }
+
+  function label(theme: Theme): string {
+    return theme === "dark" ? "Switch to light theme" : "Switch to dark theme";
+  }
+
+  const toggles = document.querySelectorAll<HTMLButtonElement>(".theme-toggle");
+
+  function syncLabels(theme: Theme) {
+    const text = label(theme);
+    toggles.forEach((button) => {
+      button.setAttribute("aria-label", text);
+      button.setAttribute("title", text);
+    });
+  }
+
+  syncLabels(activeTheme());
+
+  toggles.forEach((button) => {
+    button.addEventListener("click", () => {
+      const next: Theme = activeTheme() === "dark" ? "light" : "dark";
+      localStorage.setItem("ty-theme", next);
+      document.documentElement.setAttribute("data-theme", next);
+      syncLabels(next);
+    });
+  });
+</script>
+
+<style>
+  /* Show the icon for the theme you would switch TO. Dark is the default, so the
+     sun shows unless something says otherwise. */
+  .theme-toggle-moon {
+    display: none;
+  }
+
+  :global([data-theme="light"]) .theme-toggle-sun {
+    display: none;
+  }
+  :global([data-theme="light"]) .theme-toggle-moon {
+    display: block;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :global(:root:not([data-theme])) .theme-toggle-sun {
+      display: none;
+    }
+    :global(:root:not([data-theme])) .theme-toggle-moon {
+      display: block;
+    }
+  }
+</style>

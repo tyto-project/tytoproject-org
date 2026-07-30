@@ -1,0 +1,99 @@
+---
+import { getCollection } from "astro:content";
+import FadeIn from "@/components/ui/FadeIn.astro";
+import { CONTAINER_REF, networkFlag } from "@/data/site";
+
+/**
+ * Install commands, high on the homepage.
+ *
+ * Reference client sites put a copy-paste quickstart above their feature content,
+ * on the reasoning that someone who wants to run the thing should not have to read
+ * a pitch first. The full guide keeps the platform tabs, node requirements and network
+ * table; this is the shortest path to a running node.
+ */
+
+// The Proof-of-Work production network, read from the collection so the argument
+// here cannot drift from the guide or the networks table.
+const networks = (await getCollection("networks")).map((n) => n.data);
+const POW = networks.find((n) => n.primary && n.consensus.startsWith("PoW"))!;
+
+const DOCKER = `docker run ${CONTAINER_REF} ${networkFlag(POW.arg)}`;
+const NATIVE = `tyto ${networkFlag(POW.arg)}`;
+---
+
+<section class="section-ty section-ty--elev" id="install">
+  <div class="container-ty">
+    <FadeIn>
+      <div class="install-home__head">
+        <span class="cell-label">Install</span>
+        <h2 class="section-title install-home__title">Run a node</h2>
+        <p class="section-subtitle">
+          The Docker image needs no JDK. A platform distribution puts a tyto launcher on PATH and
+          needs the current JDK LTS. Either way the node starts syncing immediately.
+        </p>
+      </div>
+    </FadeIn>
+
+    <div class="install-home__grid">
+      <FadeIn delay={80}>
+        <div class="install-home__option">
+          <span class="cell-label">Docker</span>
+          <pre class="code-block"><code>{DOCKER}</code></pre>
+        </div>
+      </FadeIn>
+
+      <FadeIn delay={160}>
+        <div class="install-home__option">
+          <span class="cell-label">Native</span>
+          <pre class="code-block"><code>{NATIVE}</code></pre>
+        </div>
+      </FadeIn>
+    </div>
+
+    <FadeIn delay={240}>
+      <p class="install-home__more">
+        <a href="/guide" class="install-home__link"
+          >Platform installers, node requirements and every network argument →</a
+        >
+      </p>
+    </FadeIn>
+  </div>
+</section>
+
+<style>
+  .install-home__head {
+    margin-bottom: 2.5rem;
+  }
+  .install-home__title {
+    margin-bottom: 0.75rem;
+  }
+
+  .install-home__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+
+  .install-home__option {
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+  }
+  .install-home__option .cell-label {
+    display: block;
+    margin-bottom: 0.75rem;
+  }
+
+  .install-home__more {
+    margin-top: 1.5rem;
+  }
+  .install-home__link {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--accent);
+  }
+  .install-home__link:hover,
+  .install-home__link:focus-visible {
+    text-decoration: underline;
+  }
+</style>

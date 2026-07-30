@@ -1,0 +1,183 @@
+/* ========================================================================
+   Tyto — Utility classes (ported from apps/frontend/app/globals.css)
+   The brand's signature treatments: bordered cell-grid, badges, code blocks,
+   aurora hero, gradient text, protocol tags. Use these directly in markup.
+   ======================================================================== */
+
+/* ---- Layout container ----------------------------------------------- */
+.container-ty { width: 100%; max-width: var(--container); margin-inline: auto; padding-inline: 1.5rem; }
+@media (min-width: 768px)  { .container-ty { padding-inline: 2.5rem; } }
+@media (min-width: 1280px) { .container-ty { padding-inline: 3rem; } }
+
+/* ---- Sections ------------------------------------------------------- */
+.section-ty { padding-block: 5rem; }
+@media (min-width: 1024px) { .section-ty { padding-block: 7rem; } }
+.section-title { font-size: clamp(1.75rem, 3vw + 1rem, 2.5rem); font-weight: 700; letter-spacing: -0.02em; color: var(--text); line-height: 1.2; }
+.section-subtitle { font-size: 1.0625rem; color: var(--text-muted); line-height: 1.6; }
+.section-bordered { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.section-ty--elev { background: var(--bg-elev); }
+/* The .cell-label + .section-title block most sections open with. */
+.section-ty__head { margin-bottom: 3.5rem; }
+
+/* ---- Rounded card --------------------------------------------------- */
+.card-ty { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-card); transition: border-color 200ms, box-shadow 200ms, transform 200ms; }
+.card-ty:hover { border-color: var(--border-strong); box-shadow: var(--shadow-glow); transform: translateY(-2px); }
+
+/* ---- Flat panel ------------------------------------------------------ */
+/* The third surface: hairline border, sharp corners, no shadow. .cell-ty has
+   background and padding but no border; .card-ty is the rounded, shadowed one. */
+.panel-ty { border: 1px solid var(--border); padding: clamp(1.75rem, 4vw, 2.5rem); }
+.panel-ty--elev { background: var(--bg-elev); }
+
+/* ---- Buttons --------------------------------------------------------- */
+/* Sharp corners by default, matching the cell grid. font-family and cursor are
+   set explicitly because <button> inherits neither. Bare .btn-ty is the quiet
+   bordered action; add --primary for the solid green one. The size modifiers
+   are doubled (.btn-ty.btn-ty--sm) so they outrank --primary's padding-inline
+   regardless of the order a minifier emits the rules in. */
+.btn-ty { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border: 1px solid var(--border-strong); border-radius: 0; background: transparent; color: var(--text-muted); font-family: var(--font-sans); font-size: var(--text-base); font-weight: var(--weight-semibold); line-height: 1.1; text-decoration: none; white-space: nowrap; cursor: pointer; transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out); }
+.btn-ty:hover { border-color: var(--accent); color: var(--accent); }
+.btn-ty:disabled, .btn-ty[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
+.btn-ty--secondary { background: var(--bg-card); }
+.btn-ty--primary { padding-inline: 1.75rem; background: var(--accent); border-color: var(--accent); color: #fff; font-weight: var(--weight-bold); }
+.btn-ty--primary:hover { background: var(--ty-green-light); border-color: var(--ty-green-light); color: var(--ty-ink-2); }
+.btn-ty.btn-ty--sm { padding: 0.5rem 1.25rem; font-size: var(--text-sm); }
+.btn-ty.btn-ty--lg { padding: 0.875rem 2rem; font-size: var(--text-md); }
+
+/* ---- Badges --------------------------------------------------------- */
+.badge-ty { display: inline-flex; align-items: center; gap: 0.375rem; font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.04em; padding: 0.25rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-muted); }
+.badge-green  { border-color: rgba(80, 160, 96, 0.4);   background: rgba(80, 160, 96, 0.08);   color: var(--ty-green-3); }
+.badge-gold   { border-color: rgba(214, 181, 107, 0.4); background: rgba(214, 181, 107, 0.08); color: var(--ty-gold-2); }
+.badge-violet { border-color: rgba(167, 139, 250, 0.45); background: rgba(139, 92, 246, 0.12); color: #c4b5fd; }
+
+/* ---- Code blocks ---------------------------------------------------- */
+.code-block { font-family: var(--font-mono); font-size: 0.8125rem; line-height: 1.7; background: rgba(0,0,0,0.35); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.25rem 1.5rem; overflow-x: auto; color: var(--ty-ivory-dim); }
+.code-block .kw  { color: var(--ty-green-3); }
+.code-block .str { color: var(--ty-gold-2); }
+.code-block .cm  { color: var(--text-subtle); font-style: italic; }
+
+/* ---- Hero gradient + aurora blobs ----------------------------------- */
+/* ---- Hero wash — green-dominant radial (no green→gold gradient) ----- */
+.hero-gradient { background: radial-gradient(ellipse 70% 50% at 15% 50%, rgba(80,160,96,0.16) 0%, transparent 65%), radial-gradient(ellipse 55% 45% at 85% 70%, rgba(45,107,64,0.14) 0%, transparent 60%), var(--bg); }
+.aurora-blob { position: absolute; border-radius: 9999px; filter: blur(80px); pointer-events: none; will-change: transform; }
+@media (prefers-reduced-motion: no-preference) {
+    .aurora-blob--1 { animation: aurora-drift-1 22s var(--ease-out) infinite alternate; }
+    .aurora-blob--2 { animation: aurora-drift-2 28s var(--ease-out) infinite alternate; }
+    .aurora-blob--3 { animation: aurora-drift-3 32s var(--ease-out) infinite alternate; }
+}
+
+/* ---- Accent text — solid brand green (NOT a gradient) --------------- */
+.gradient-text { color: var(--accent); }
+
+/* ---- Nav ------------------------------------------------------------ */
+.nav-ty { position: sticky; top: 0; z-index: 100; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); border-bottom: 1px solid var(--border); transition: background 200ms; }
+.nav-link { padding: 0.375rem var(--space-3); border-radius: var(--radius-sm); font-size: 0.875rem; font-weight: var(--weight-medium); color: var(--text-muted); transition: color var(--dur-fast), background var(--dur-fast); }
+.nav-link:hover { color: var(--text); background: var(--bg-card); }
+
+/* ---- Icon button — square affordance for a bare glyph ---------------- */
+.icon-btn { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; transition: border-color var(--dur-fast), color var(--dur-fast), background var(--dur-fast); }
+.icon-btn:hover { border-color: var(--border-strong); color: var(--text); }
+
+/* ---- Alpha banner / status strip ------------------------------------ */
+.alpha-banner { background: rgba(214,181,107,0.10); border-bottom: 1px solid rgba(214,181,107,0.30); padding: 0.5rem 1rem; text-align: center; font-family: var(--font-mono); font-size: 0.75rem; color: var(--ty-gold-2); letter-spacing: 0.04em; }
+.status-strip { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--bg-card); padding-block: 0.875rem; }
+.alpha-status { display: flex; align-items: center; gap: 0.625rem; font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.08em; color: var(--ty-gold-2); text-transform: uppercase; }
+.badge-pulse-dot { display: inline-block; width: 7px; height: 7px; border-radius: 9999px; background: var(--ty-gold-2); animation: badge-pulse 2.5s ease-in-out infinite; flex-shrink: 0; }
+
+/* ---- Feature tabs --------------------------------------------------- */
+.tab-btn { padding: 0.5rem 1rem; border: none; border-bottom: 2px solid transparent; background: transparent; font-family: var(--font-sans); font-size: 0.875rem; font-weight: 500; color: var(--text-muted); cursor: pointer; white-space: nowrap; transition: color 150ms, border-color 150ms; }
+.tab-btn:hover { color: var(--text); }
+.tab-btn.tab-active { color: var(--text); border-bottom-color: var(--accent); }
+
+/* ---- CTA glass ------------------------------------------------------ */
+.cta-glass { background: var(--bg-card-strong); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border-strong); border-radius: var(--radius-xl); box-shadow: var(--shadow-glow); }
+
+/* ====================================================================
+   Cell system — geth-inspired bordered grid. Sharp corners, shared 1px
+   edges, documentary mono labels. The brand's structural signature.
+   ==================================================================== */
+.cell-grid { display: grid; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+.cell-ty { background: var(--bg); padding: 2rem; }
+.cell-ty--elev { background: var(--bg-elev); }
+.cell-cta { border-top: 1px solid var(--border); padding: 0.875rem 2rem; font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background 150ms; }
+.cell-cta:hover { background: var(--accent-soft); }
+.cell-label { font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.75rem; display: block; }
+.cell-h2 { font-size: clamp(1.375rem, 2.5vw, 1.875rem); font-weight: 700; letter-spacing: -0.025em; color: var(--text); line-height: 1.25; margin-bottom: 1rem; }
+.cell-h3 { font-size: 1rem; font-weight: var(--weight-bold); letter-spacing: -0.01em; color: var(--text); }
+.cell-divider { border-top: 1px solid var(--border); }
+/* Divider goes BETWEEN fact boxes, not below each. :last-child only fires when
+   the fact box is genuinely last, so a trailing sibling — commonly a .cell-cta,
+   which draws its own border-top — left a doubled hairline. */
+.fact-box { padding: 1.75rem 2rem; }
+.fact-box + .fact-box { border-top: 1px solid var(--border); }
+
+/* Tints a cell over hero artwork so text stays legible without hiding it. */
+.hero-cell-overlay { background: color-mix(in srgb, var(--bg) 65%, transparent); backdrop-filter: blur(1px); -webkit-backdrop-filter: blur(1px); }
+/* Vertical hairline joining stacked layers in a diagram. */
+.layer-connector { width: 1px; height: var(--space-8); background: linear-gradient(to bottom, var(--accent), var(--border)); margin-inline: auto; }
+
+/* ---- Cell grid shapes — both stack to one column below 768px ---------
+   The divider between cells belongs here, not on the cells. A consumer drawing
+   its own border-left leaves a stray vertical rule cutting across the layout
+   once the grid stacks; the grid is the only thing that knows which way it is
+   laid out. Do not add borders to the children. */
+.cell-grid-2col { display: grid; grid-template-columns: 1fr; }
+/* Left-heavy editorial split: prose beside a stack of .fact-box rows. */
+.what-grid { display: grid; grid-template-columns: 1fr; border: 1px solid var(--border); }
+.cell-grid-2col > * + *,
+.what-grid > * + * { border-top: 1px solid var(--border); }
+@media (min-width: 768px) {
+    .cell-grid-2col { grid-template-columns: 1fr 1fr; }
+    .what-grid { grid-template-columns: 3fr 2fr; }
+    .cell-grid-2col > * + *,
+    .what-grid > * + * { border-top: 0; border-left: 1px solid var(--border); }
+}
+
+/* ---- Vertical stack -------------------------------------------------- */
+/* The vertical counterpart of .cell-grid: N panels sharing hairline dividers
+   inside one outer border. `> * + *` avoids the per-item index arithmetic this
+   otherwise needs in markup. */
+.stack-ty { border: 1px solid var(--border); }
+.stack-ty > * + * { border-top: 1px solid var(--border); }
+.stack-ty__item { padding: 1.75rem clamp(1.5rem, 4vw, 2.5rem); }
+
+/* ---- Data table ------------------------------------------------------ */
+/* Genuine tabular data. Use a real <table> with scope="col"/scope="row" — the
+   .protocol-* classes are a presentational matrix and do not announce as a
+   table. The scroll wrapper is required: tabular data must escape sideways on
+   narrow viewports rather than reflow into unreadable columns. Set min-width
+   on the table yourself; it depends on column count. */
+.table-scroll-ty { border: 1px solid var(--border); overflow-x: auto; }
+.table-ty { width: 100%; border-collapse: collapse; text-align: left; }
+.table-ty thead th { font-family: var(--font-mono); font-size: var(--text-2xs); font-weight: var(--weight-semibold); letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-subtle); background: var(--bg-card); border-bottom: 1px solid var(--border); padding: 0.625rem 1.25rem; }
+.table-ty tbody th, .table-ty tbody td { padding: 0.875rem 1.25rem; vertical-align: top; font-size: 0.875rem; font-weight: var(--weight-regular); line-height: 1.5; color: var(--text-muted); }
+.table-ty tbody tr:nth-child(even) { background: var(--bg-card); }
+.table-ty tbody tr + tr { border-top: 1px solid var(--border); }
+/* Visually hidden caption — announced to screen readers, redundant on screen
+   next to a visible heading. */
+.table-ty__caption { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* ---- OS / platform pills -------------------------------------------- */
+.os-platform-row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-block: 1.5rem; }
+.os-pill { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.25rem 0.75rem; border: 1px solid var(--border); background: var(--bg-card); font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.04em; color: var(--text-subtle); }
+
+/* ---- Protocol compatibility matrix ---------------------------------- */
+.protocol-matrix { border: 1px solid var(--border); }
+.protocol-row { display: grid; grid-template-columns: 160px 1fr; border-bottom: 1px solid var(--border); min-height: 52px; }
+.protocol-row:last-child { border-bottom: none; }
+.protocol-category { font-family: var(--font-mono); font-size: 0.625rem; letter-spacing: 0.10em; text-transform: uppercase; color: var(--text-subtle); padding: 0.875rem 1.5rem; border-right: 1px solid var(--border); display: flex; align-items: center; align-self: stretch; }
+.protocol-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.875rem 1.5rem; align-items: center; }
+@media (max-width: 640px) {
+    .protocol-row { grid-template-columns: 1fr; }
+    .protocol-category { border-right: none; border-bottom: 1px solid var(--border); padding: 0.5rem 1rem; }
+    .protocol-tags { padding: 0.75rem 1rem; }
+}
+.proto-tag { display: inline-flex; align-items: center; padding: 0.2rem 0.625rem; border-radius: 9999px; font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.03em; white-space: nowrap; border: 1px solid transparent; }
+.proto-tag--green  { border-color: rgba(80,160,96,0.40);   background: rgba(80,160,96,0.10);  color: var(--ty-green-3); }
+.proto-tag--blue   { border-color: rgba(96,165,250,0.30);  background: rgba(59,130,246,0.08); color: #60a5fa; }
+.proto-tag--teal   { border-color: rgba(45,212,191,0.30);  background: rgba(20,184,166,0.08); color: #2dd4bf; }
+.proto-tag--violet { border-color: rgba(167,139,250,0.30); background: rgba(139,92,246,0.08); color: #a78bfa; }
+.proto-tag--amber  { border-color: rgba(214,181,107,0.40); background: rgba(214,181,107,0.08); color: var(--ty-gold-2); }
+.proto-tag--indigo { border-color: rgba(129,140,248,0.30); background: rgba(99,102,241,0.08);  color: #818cf8; }
+.proto-tag--orange { border-color: rgba(251,146,60,0.30);  background: rgba(249,115,22,0.08);  color: #fb923c; }
+.proto-tag--muted  { border-color: var(--border);          background: var(--bg-card);        color: var(--text-subtle); }

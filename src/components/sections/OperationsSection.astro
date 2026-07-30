@@ -1,0 +1,85 @@
+---
+import FadeIn from "@/components/ui/FadeIn.astro";
+import { DOCS_URL } from "@/data/site";
+import ProofCardGrid, { type ProofCard } from "@/components/ui/ProofCardGrid.astro";
+
+const CARDS: readonly ProofCard[] = [
+  {
+    title: "Observability",
+    lead: "Tyto reports what it is doing.",
+    items: [
+      "Prometheus metrics + Grafana dashboards",
+      "/health · /readiness · /buildinfo endpoints",
+      "ResilientRollingFileAppender for disk pressure",
+    ],
+    icon: `<line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />`,
+  },
+  {
+    title: "Behavior under load",
+    lead: "Sync does not starve the RPC.",
+    items: [
+      "Isolated Pekko dispatchers: sync, rpc, general",
+      "Bootstrap checkpoints skip startup peer-wait",
+      "Log rotation survives disk pressure",
+    ],
+    icon: `<circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />`,
+  },
+  {
+    title: "Supply chain",
+    lead: "You can verify what you deployed.",
+    items: [
+      "Cosign-signed container images on GHCR",
+      "Build provenance attestation",
+      "CycloneDX SBOM on every release",
+    ],
+    icon: `<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><polyline points="9 12 11 14 15 10" />`,
+  },
+  {
+    title: "Aggregation gateways",
+    lead: "Tyto works as an upstream for RPC aggregation.",
+    items: [
+      "dRPC-Provider gRPC bridge",
+      "An RPC-relay deployment profile",
+      "A Scala implementation behind the aggregation layer",
+    ],
+    icon: `<circle cx="5" cy="12" r="2.5" /><circle cx="19" cy="5" r="2.5" /><circle cx="19" cy="12" r="2.5" /><circle cx="19" cy="19" r="2.5" /><line x1="7.3" y1="12" x2="16.7" y2="6.3" /><line x1="7.3" y1="12" x2="16.7" y2="12" /><line x1="7.3" y1="12" x2="16.7" y2="17.7" />`,
+  },
+];
+---
+
+<section class="section-ty section-ty--elev" id="operations">
+  <div class="container-ty">
+    <FadeIn>
+      <div class="operations__head">
+        <span class="cell-label">Operations</span>
+        <h2 class="section-title operations__title">Running Tyto</h2>
+        <p class="section-subtitle">
+          Everything below ships in the binary. No sidecar, no plugin, no configuration required
+          before the node will tell you what it is doing.
+        </p>
+      </div>
+    </FadeIn>
+
+    <ProofCardGrid cards={CARDS} />
+
+    <FadeIn delay={300}>
+      <div class="cell-ty callout-ty">
+        <p class="callout-ty__text">
+          Runbooks, alerting guidance, and upgrade procedures live in the operator documentation.
+        </p>
+        <a href={DOCS_URL} target="_blank" rel="noopener noreferrer" class="callout-ty__link">
+          Operator docs →
+        </a>
+      </div>
+    </FadeIn>
+  </div>
+</section>
+
+<style>
+  .operations__head {
+    margin-bottom: 3rem;
+  }
+  .operations__title {
+    margin-bottom: 1rem;
+  }
+</style>

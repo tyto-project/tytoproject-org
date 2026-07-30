@@ -1,0 +1,50 @@
+/**
+ * Tyto — web reference implementation
+ *
+ * COPY THIS, DO NOT DEPEND ON IT. This directory is a worked example showing how
+ * the Tyto design language is expressed in CSS. Lift what you need into your own
+ * project and own it there. A shared component package was tried and removed: five
+ * product surfaces use five different styling mechanisms, and only the tokens and
+ * the design intent actually travel between them.
+ *
+ * What DOES travel is ../../tokens/ — the DTCG JSON is the source of truth, and the
+ * CSS files it generates are the web expression of it.
+ *
+ * The bare-string @import form is REQUIRED, not a style choice. Bundlers such as
+ * Tailwind 4 and Vite do not follow `@import url('./relative.css')` from inside a
+ * package — they drop it silently, with no warning and a passing build, so every
+ * token vanishes from the output while var(--ty-*) references survive and resolve
+ * to nothing. Browsers accept both forms.
+ *
+ * Order is load-bearing: base and effects consume variables the token layers define.
+ */
+
+/* Generated token layers — never hand-edit these. See ../../scripts/build-tokens.mjs */
+@import "../tokens/colors.css";
+@import "../tokens/typography.css";
+@import "../tokens/spacing.css";
+@import "../tokens/motion.css";
+
+/* Web-only implementation */
+@import "./animations.css";
+@import "./base.css";
+@import "./effects.css";
+
+/*
+ * FONTS. Nothing here loads them, deliberately — there is no CDN import.
+ * The Google Fonts CDN observes every visitor's IP, which a German court has held
+ * to violate the GDPR, and Tyto sells to European financial institutions.
+ *
+ * Self-host instead:
+ *
+ *     pnpm add @fontsource/dm-sans @fontsource/jetbrains-mono
+ *
+ *     import "@fontsource/dm-sans/400.css";        // ... 500, 600, 700, 800
+ *     import "@fontsource/jetbrains-mono/400.css"; // ... 500, 600, 700
+ *
+ * ../../fonts/ vendors the TTFs if you need raw files. The stacks in
+ * ../../tokens/typography.css fall back through ui-sans-serif / ui-monospace, so
+ * text renders correctly before webfonts arrive. --font-sans and --font-mono wrap
+ * their primary family in var(--font-dm-sans, ...) so a framework that generates
+ * its own font (Next.js `next/font`) can inject it.
+ */

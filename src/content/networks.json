@@ -1,0 +1,54 @@
+[
+  {
+    "id": "ethereum-classic",
+    "name": "Ethereum Classic",
+    "chainId": 61,
+    "arg": "etc",
+    "family": "Ethereum Classic",
+    "consensus": "PoW",
+    "tags": ["Follows the fork schedule"],
+    "primary": true,
+    "summary": "the only Proof-of-Work EVM network, PoW/ETChash, full SNAP sync, following the network's own fork schedule",
+    "order": 0,
+    "shortName": "Ethereum Classic"
+  },
+  {
+    "id": "mordor",
+    "name": "Mordor",
+    "chainId": 63,
+    "arg": "mordor",
+    "family": "Ethereum Classic",
+    "consensus": "PoW testnet",
+    "tags": ["ETC testnet"],
+    "primary": false,
+    "summary": "ETC PoW testnet",
+    "order": 1,
+    "shortName": "Mordor testnet"
+  },
+  {
+    "id": "ethereum-mainnet",
+    "name": "Ethereum Mainnet",
+    "chainId": 1,
+    "arg": "eth",
+    "family": "Ethereum",
+    "consensus": "PoS",
+    "tags": ["Follows the fork schedule"],
+    "primary": true,
+    "summary": "the largest Proof-of-Stake network, with Tyto running both the execution and consensus layers",
+    "order": 2,
+    "shortName": "Ethereum mainnet"
+  },
+  {
+    "id": "sepolia",
+    "name": "Sepolia",
+    "chainId": 11155111,
+    "arg": "sepolia",
+    "family": "Ethereum",
+    "consensus": "PoS testnet",
+    "tags": ["ETH testnet"],
+    "primary": false,
+    "summary": "ETH PoS testnet",
+    "order": 3,
+    "shortName": "Sepolia"
+  }
+]

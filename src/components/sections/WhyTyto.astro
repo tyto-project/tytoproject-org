@@ -1,0 +1,78 @@
+---
+import FadeIn from "@/components/ui/FadeIn.astro";
+
+const BLOCKS = [
+  {
+    label: "NETWORKS",
+    heading: "Tyto runs the EVM ecosystem",
+    body: "Ethereum Classic, the only Proof-of-Work EVM network in production, and Ethereum, the largest Proof-of-Stake network, each with its testnet. The same network-family framework extends the same binary to consortium networks, sidechains, L2 rollups and ZK-EVM families by configuration. Each network's fork schedule is tracked as part of running it.",
+  },
+  {
+    label: "ONE BINARY",
+    heading: "One binary runs several networks at once",
+    body: "Tyto can run several networks at the same time, in one process. Each network has its own state, its own metrics registry and its own configuration, and is supervised separately. That means fewer machines to operate and one supply chain to audit.",
+  },
+  {
+    label: "OPTIONAL LAYERS",
+    heading: "It can mine, and it can run consensus",
+    body: "Tyto is an execution client. On Proof-of-Work it can also mine, and on Proof-of-Stake it can run a consensus layer in the same binary so a node is one process. Both are options rather than requirements: the Engine API is implemented either way, so an external consensus client can drive Tyto instead.",
+  },
+  {
+    label: "SCALA 3",
+    heading: "Tyto is written in Scala 3",
+    body: "Scala 3's algebraic data types and exhaustive pattern matching make many consensus-critical mistakes impossible to express, so they are caught when the code is compiled rather than when a block is processed.",
+  },
+  {
+    label: "JVM",
+    heading: "Tyto runs on the JVM",
+    body: "JFR, async-profiler, JMX and heap dumps work on Tyto the way they work on any other JVM process. There is no foreign-language bridge between the client and the rest of your stack.",
+  },
+  {
+    label: "MCP SERVER",
+    heading: "Tyto ships an MCP server",
+    body: "Model Context Protocol is an open standard for exposing structured tools to AI agents. Tyto's MCP server exposes node state, sync progress, peer counts and block data to any MCP-compatible agent, for infrastructure automation, anomaly detection and runbook execution.",
+  },
+] as const;
+---
+
+<section class="section-ty section-ty--elev section-bordered" id="why">
+  <div class="container-ty">
+    <FadeIn>
+      <div class="section-ty__head">
+        <span class="cell-label">Why Tyto</span>
+        <h2 class="section-title">What Tyto does</h2>
+      </div>
+    </FadeIn>
+
+    <div class="stack-ty">
+      {
+        BLOCKS.map((block, i) => (
+          <FadeIn delay={i * 80}>
+            <div class="stack-ty__item">
+              <span class="cell-label">{block.label}</span>
+              <h3 class="why-tyto__heading">{block.heading}</h3>
+              <p class="why-tyto__body">{block.body}</p>
+            </div>
+          </FadeIn>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .why-tyto__heading {
+    font-size: clamp(1.125rem, 2vw + 0.5rem, 1.5rem);
+    font-weight: var(--weight-bold);
+    letter-spacing: var(--tracking-tight);
+    color: var(--text);
+    line-height: 1.3;
+    margin-bottom: 0.875rem;
+  }
+
+  .why-tyto__body {
+    font-size: var(--text-md);
+    color: var(--text-muted);
+    line-height: var(--leading-relaxed);
+  }
+</style>

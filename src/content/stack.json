@@ -1,0 +1,161 @@
+[
+  {
+    "id": "language",
+    "layer": "Language",
+    "library": "Scala 3 LTS",
+    "track": "Current LTS patch",
+    "order": 0,
+    "shortName": "Scala 3 LTS"
+  },
+  {
+    "id": "jdk",
+    "layer": "JDK",
+    "library": "OpenJDK",
+    "track": "Current LTS",
+    "order": 1,
+    "shortName": "current JDK LTS"
+  },
+  {
+    "id": "actors",
+    "layer": "Actor system",
+    "library": "Apache Pekko (actor + typed + streams)",
+    "track": "Latest stable",
+    "order": 2,
+    "shortName": "Apache Pekko"
+  },
+  {
+    "id": "http",
+    "layer": "HTTP / WebSocket / GraphQL",
+    "library": "Apache Pekko HTTP",
+    "track": "Latest stable",
+    "order": 3
+  },
+  {
+    "id": "graphql",
+    "layer": "GraphQL engine",
+    "library": "Sangria (EIP-1767)",
+    "track": "Latest stable",
+    "order": 4
+  },
+  {
+    "id": "storage",
+    "layer": "Storage",
+    "library": "RocksDB JNI",
+    "track": "Latest stable",
+    "order": 5,
+    "shortName": "RocksDB"
+  },
+  {
+    "id": "cache",
+    "layer": "In-memory cache",
+    "library": "Caffeine / Scaffeine",
+    "track": "Latest stable",
+    "order": 6
+  },
+  {
+    "id": "crypto",
+    "layer": "Crypto",
+    "library": "Bouncy Castle",
+    "track": "Latest stable",
+    "order": 7
+  },
+  {
+    "id": "bls",
+    "layer": "BLS12-381",
+    "library": "Hyperledger Besu BLS",
+    "track": "Latest stable",
+    "order": 8
+  },
+  {
+    "id": "kzg",
+    "layer": "KZG / EIP-4844",
+    "library": "jc-kzg-4844",
+    "track": "Latest stable",
+    "order": 9
+  },
+  {
+    "id": "effects",
+    "layer": "Effects",
+    "library": "Cats Effect 3",
+    "track": "Latest stable",
+    "order": 10,
+    "shortName": "Cats Effect 3 + fs2"
+  },
+  {
+    "id": "streaming",
+    "layer": "Streaming",
+    "library": "fs2",
+    "track": "Latest stable",
+    "order": 11
+  },
+  {
+    "id": "fp",
+    "layer": "FP core",
+    "library": "Cats",
+    "track": "Latest stable",
+    "order": 12
+  },
+  {
+    "id": "codec",
+    "layer": "Codec / RLP",
+    "library": "scodec-core / scodec-bits",
+    "track": "Latest stable",
+    "order": 13
+  },
+  {
+    "id": "networking",
+    "layer": "Networking",
+    "library": "Netty",
+    "track": "Latest stable",
+    "order": 14
+  },
+  {
+    "id": "discovery",
+    "layer": "Network discovery",
+    "library": "UPnP via JUPnP",
+    "track": "Latest stable",
+    "order": 15
+  },
+  {
+    "id": "serial",
+    "layer": "Serialization",
+    "library": "json4s / circe",
+    "track": "Latest stable",
+    "order": 16
+  },
+  {
+    "id": "metrics",
+    "layer": "Metrics",
+    "library": "Prometheus Java client",
+    "track": "Latest stable",
+    "order": 17
+  },
+  {
+    "id": "micrometer",
+    "layer": "Metrics",
+    "library": "Micrometer (JMX + Prometheus)",
+    "track": "Latest stable",
+    "order": 18
+  },
+  {
+    "id": "kamon",
+    "layer": "Observability",
+    "library": "Kamon",
+    "track": "Latest stable",
+    "order": 19
+  },
+  {
+    "id": "logging",
+    "layer": "Logging",
+    "library": "Logback / scala-logging / log4cats",
+    "track": "Latest stable",
+    "order": 20
+  },
+  {
+    "id": "compress",
+    "layer": "Compression",
+    "library": "snappy-java",
+    "track": "Latest stable",
+    "order": 21
+  }
+]

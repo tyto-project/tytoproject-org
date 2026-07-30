@@ -1,0 +1,292 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import NavHeader from "@/components/sections/NavHeader.astro";
+import FooterSection from "@/components/sections/FooterSection.astro";
+import FadeIn from "@/components/ui/FadeIn.astro";
+import PageHero from "@/components/ui/PageHero.astro";
+import DataTable, { type DataTableColumn } from "@/components/ui/DataTable.astro";
+
+const ENGINE_API_URL = "https://github.com/ethereum/execution-apis/tree/main/src/engine";
+const STAKING_URL = "https://ethereum.org/en/staking/";
+
+// Tyto is the execution layer. Running the consensus layer itself is one option and
+// pairing an external one is the other. Both paths are documented; neither is
+// presented as what Tyto is.
+const EXTERNAL_CL = `# Generate the shared secret both processes read
+openssl rand -hex 32 | tr -d "\\n" > jwt.hex
+
+# Run Tyto as the execution layer
+tyto --network=eth \\
+  --engine-rpc-enabled \\
+  --engine-rpc-port=8551 \\
+  --engine-jwt-secret=./jwt.hex
+
+# Then point a consensus client at http://localhost:8551,
+# giving it the same jwt.hex`;
+
+const BUILT_IN_CL = `# The consensus layer runs in the same process, so there is no
+# second program to install and no shared secret to manage.
+tyto --network=eth \\
+  --consensus-layer-enabled \\
+  --fee-recipient=0xYourAddress`;
+
+const PORT_COLUMNS: readonly DataTableColumn[] = [
+  { label: "Port", mono: true },
+  { label: "Carries" },
+  { label: "Expose" },
+];
+
+const PORTS: readonly (readonly string[])[] = [
+  ["30303", "P2P discovery and peering, TCP and UDP", "Yes, to the internet"],
+  ["8545", "JSON-RPC over HTTP", "Trusted callers only"],
+  ["8546", "JSON-RPC over WebSocket", "Trusted callers only"],
+  ["8551", "Engine API, authenticated with the JWT secret", "Localhost only"],
+  ["9545", "Prometheus metrics", "Your monitoring only"],
+];
+
+const CL_COLUMNS: readonly DataTableColumn[] = [
+  { label: "Consensus client" },
+  { label: "Language" },
+];
+
+const CLIENTS: readonly (readonly string[])[] = [
+  ["Lighthouse", "Rust"],
+  ["Prysm", "Go"],
+  ["Teku", "Java"],
+  ["Lodestar", "TypeScript"],
+  ["Nimbus", "Nim"],
+];
+---
+
+<BaseLayout
+  title="Staking"
+  description="Running Tyto on a Proof-of-Stake network: pair a consensus client over the Engine API, or run the consensus layer in the same binary."
+>
+  <main>
+    <NavHeader />
+    <div id="main-content">
+      <PageHero
+        eyebrow="Staking"
+        title="The execution half of a Proof-of-Stake node"
+        description="A Proof-of-Stake node is two jobs: executing transactions and deciding which block is canonical. Tyto is the first of those, and it can be the second as well. Pair it with any consensus client over the Engine API, or run the consensus layer inside the same binary."
+        ctas={[
+          { label: "Quick Start", href: "/guide", primary: true },
+          { label: "Operations", href: "/operations" },
+        ]}
+      />
+
+      <section class="section-ty">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="stake__head">
+              <span class="cell-label">What a node needs</span>
+              <h2 class="section-title stake__title">Two layers, one or two processes</h2>
+              <p class="section-subtitle">
+                A Proof-of-Stake network needs an execution layer and a consensus layer. Tyto is
+                the execution layer: it holds state, executes transactions, and builds or validates
+                the payload inside each block. Deciding which block wins is the consensus layer's
+                job, and you can either supply that layer yourself or let Tyto run it.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <div class="stake__option">
+              <span class="cell-label">Option 1</span>
+              <h3 class="stake__option-title">Pair an external consensus client</h3>
+              <p class="stake__option-body">
+                The <a
+                  href={ENGINE_API_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="stake__link">Engine API</a
+                > is a published specification, so any client implementing it can drive Tyto. Both processes
+                read the same JWT secret from a file, and the authenticated port stays on localhost.
+              </p>
+              <pre class="code-block"><code>{EXTERNAL_CL}</code></pre>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={160}>
+            <div class="stake__option">
+              <span class="cell-label">Option 2</span>
+              <h3 class="stake__option-title">Run the consensus layer in the same binary</h3>
+              <p class="stake__option-body">
+                Tyto can run the consensus layer itself, which removes the second process, the
+                second release cadence, and the secret shared between them. The trade is
+                implementation diversity: two programs from two projects fail in different ways, and
+                one program does not.
+              </p>
+              <pre class="code-block"><code>{BUILT_IN_CL}</code></pre>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty section-ty--elev">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="stake__head">
+              <span class="cell-label">The interface</span>
+              <h2 class="section-title stake__title">How the two layers talk</h2>
+              <p class="section-subtitle">
+                The exchange is smaller than it sounds. The consensus layer hands the execution
+                layer a proposed block and asks it to execute and validate the contents, and
+                separately tells it which block is now the head, which is safe, and which is
+                finalized. When this node is due to propose, the consensus layer asks it to build a
+                payload and then collects the result. That is the whole conversation.
+              </p>
+              <p class="section-subtitle">
+                The shared secret is not access control for users. It is how the two processes prove
+                to each other that they are the pair you configured, and it matters because this is
+                the one interface that can tell the node which chain to follow. That is why the
+                authenticated port stays on the loopback address and never goes near the internet.
+              </p>
+              <p class="section-subtitle">
+                The fee recipient is set on the execution layer rather than the consensus layer
+                because that is where blocks are actually assembled. It is the address credited with
+                the priority fees from any block this node builds.
+              </p>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="stake__head">
+              <span class="cell-label">A different failure mode</span>
+              <h2 class="section-title stake__title">The node cannot find the head by itself</h2>
+              <p class="section-subtitle">
+                Under Proof-of-Work a node picks the head itself, by weight of accumulated work.
+                Under Proof-of-Stake the execution layer has no equivalent measure available to it:
+                which branch is canonical is a consensus-layer determination, and the execution
+                layer learns it by being told. Syncing works the same way around, running toward a
+                head the consensus layer supplies rather than forward from whatever the node last
+                knew.
+              </p>
+              <p class="section-subtitle">
+                That changes what a missing consensus layer means. The node does not quietly choose
+                a head of its own, because it has nothing to choose with; it simply stops advancing.
+                So a consensus layer that has stopped talking is treated as a fault worth reporting
+                rather than a quiet degradation. A node sitting at a stale head while reporting
+                itself healthy is worse than one that says plainly it is stuck, and this is the
+                specific reason readiness on a Proof-of-Stake network has to mean more than the
+                process being alive.
+              </p>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty section-ty--elev">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="stake__head">
+              <span class="cell-label">Clients</span>
+              <h2 class="section-title stake__title">Consensus clients that drive Tyto</h2>
+              <p class="section-subtitle">
+                Each implements the Engine API, in a different language. Tyto behaves the same way
+                behind all of them.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <DataTable
+              caption="Consensus clients that implement the Engine API"
+              columns={CL_COLUMNS}
+              rows={CLIENTS}
+              minWidth="24rem"
+            />
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="stake__head">
+              <span class="cell-label">Ports</span>
+              <h2 class="section-title stake__title">What to open, and to whom</h2>
+              <p class="section-subtitle">
+                The peering port needs to reach the internet. Nothing else does, and the
+                authenticated Engine API port in particular should never leave the host.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <DataTable
+              caption="Default ports and their intended exposure"
+              columns={PORT_COLUMNS}
+              rows={PORTS}
+              minWidth="38rem"
+            />
+          </FadeIn>
+
+          <FadeIn delay={160}>
+            <div class="cell-ty callout-ty stake__note">
+              <p class="callout-ty__text">
+                Running a validator is a further step, with its own key handling, its own stake
+                requirement, and withdrawal credentials set when the validator is created. Those are
+                protocol-level concerns rather than client configuration.
+              </p>
+              <a
+                href={STAKING_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="callout-ty__link">Staking on Ethereum, at ethereum.org →</a
+              >
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+    </div>
+    <FooterSection />
+  </main>
+</BaseLayout>
+
+<style>
+  .stake__head {
+    margin-bottom: 3rem;
+  }
+  .stake__title {
+    margin-bottom: 0.75rem;
+  }
+
+  .stake__option {
+    border: 1px solid var(--border);
+    padding: 2rem 1.75rem;
+  }
+  .stake__option + .stake__option {
+    margin-top: 1rem;
+  }
+  .stake__option-title {
+    font-size: var(--text-md);
+    font-weight: var(--weight-bold);
+    color: var(--text);
+    letter-spacing: -0.01em;
+    margin-block: 0.5rem 0.75rem;
+  }
+  .stake__option-body {
+    font-size: var(--text-base);
+    color: var(--text-muted);
+    line-height: 1.65;
+    margin-bottom: 1.25rem;
+  }
+
+  .stake__link {
+    color: var(--accent);
+    font-weight: var(--weight-semibold);
+  }
+  .stake__link:hover,
+  .stake__link:focus-visible {
+    text-decoration: underline;
+  }
+
+  .stake__note {
+    margin-top: 2rem;
+  }
+</style>

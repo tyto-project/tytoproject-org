@@ -1,0 +1,350 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { REPO_URL } from "@/data/site";
+import NavHeader from "@/components/sections/NavHeader.astro";
+import FooterSection from "@/components/sections/FooterSection.astro";
+import FadeIn from "@/components/ui/FadeIn.astro";
+import PageHero from "@/components/ui/PageHero.astro";
+import SegmentGrid, { type Segment } from "@/components/ui/SegmentGrid.astro";
+import ProofCardGrid, { type ProofCard } from "@/components/ui/ProofCardGrid.astro";
+import DataTable, { type DataTableColumn } from "@/components/ui/DataTable.astro";
+
+const SCALA_URL = "https://www.scala-lang.org/";
+const PEKKO_URL = "https://pekko.apache.org/";
+const ENGINE_API_URL = "https://github.com/ethereum/execution-apis/tree/main/src/engine";
+
+// The functional split: what each layer is responsible for. This is the view that
+// explains why one binary serves several networks.
+const LAYERS: readonly Segment[] = [
+  {
+    tag: "CONSENSUS DRIVER",
+    name: "pluggable",
+    description:
+      "Whatever decides which block is canonical. ETChash for Proof-of-Work, a consensus layer over the Engine API for Proof-of-Stake, Clique or QBFT for permissioned networks, and the same seam takes rollup derivation and ZK verification. Anything that can drive the Engine API is a valid driver.",
+  },
+  {
+    tag: "CHAIN ENVIRONMENT",
+    name: "tyto-env",
+    description:
+      "The parameters that make one network different from another: chain identity, genesis, the fork schedule, the gas schedule and fee mechanics. EVM divergences live here rather than in the engine, so a new network is a definition instead of a code change.",
+  },
+  {
+    tag: "EXECUTION ENGINE",
+    name: "tyto-core",
+    description:
+      "Consensus-agnostic and reusable: EVM bytecode execution, state trie and world state, transaction validation, block construction and the state transition, plus the JSON-RPC and Engine API surface. It holds no consensus logic and no chain-specific behavior.",
+    accent: true,
+  },
+];
+
+const PRINCIPLES: readonly ProofCard[] = [
+  {
+    title: "Chain identity is a parameter",
+    lead: "Not a global assumption.",
+    items: [
+      "Chain ID, gas schedule and precompiles set per instance",
+      "Transaction types and state commitment configurable",
+      "Nothing network-specific compiled in",
+    ],
+    icon: `<circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18" />`,
+  },
+  {
+    title: "Consensus is a module",
+    lead: "The Engine API is the boundary.",
+    items: [
+      "Any driver of newPayload and forkchoiceUpdated qualifies",
+      "Proof-of-Work, Proof-of-Authority, rollup derivation",
+      "No branching on the consensus model in shared code",
+    ],
+    icon: `<rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /><path d="M10 6.5h4a3 3 0 0 1 3 3v4" />`,
+  },
+  {
+    title: "One runtime, many chains",
+    lead: "Each with its own everything.",
+    items: [
+      "Separate state database per network",
+      "Separate chain configuration and consensus driver",
+      "Natural for L2, whose driver reads L1 state",
+    ],
+    icon: `<rect x="3" y="4" width="18" height="5" rx="1" /><rect x="3" y="11" width="18" height="5" rx="1" /><rect x="3" y="18" width="18" height="3" rx="1" />`,
+  },
+];
+
+// The physical structure: sbt modules, one per layer, every edge pointing down.
+// Dependencies rather than layer numbers: the edges are the claim, and listing them
+// demonstrates the graph is acyclic instead of asserting it. Read top to bottom, no
+// module names a module below it in this list.
+const MODULE_COLUMNS: readonly DataTableColumn[] = [
+  { label: "Module", mono: true },
+  { label: "Depends on", mono: true },
+  { label: "Holds" },
+];
+
+const MODULES: readonly (readonly string[])[] = [
+  ["node", "all of the below", "Composition root. The only module that sees everything"],
+  ["rpc", "domain, execution, consensus, sync, network, storage", "JSON-RPC, GraphQL, Engine API"],
+  ["sync", "network, consensus, execution, storage, trie", "Chain synchronization"],
+  ["consensus-pow · consensus-pos", "consensus-api, execution", "One module per consensus family"],
+  ["consensus-api", "execution, evm, domain", "The seam a consensus family plugs into"],
+  ["network", "domain, crypto, rlp, common", "Wire protocols, discovery, peering"],
+  ["execution", "evm, trie, storage, domain", "State transition and block processing"],
+  ["evm", "domain, crypto, rlp", "Bytecode execution"],
+  ["trie", "domain, crypto, storage", "State trie"],
+  ["storage", "domain, common", "Persistence"],
+  ["domain", "bytes, crypto, rlp, common", "Pure value types, no upward edges"],
+  ["crypto · rlp", "bytes", "Primitives"],
+  ["bytes · common", "nothing", "Foundation, true leaves"],
+];
+
+const MECHANISM: readonly ProofCard[] = [
+  {
+    title: "One process, many networks",
+    lead: "Actors give each network its own supervision tree.",
+    items: [
+      "Own state, own metrics registry, own config",
+      "Separate dispatchers for sync, rpc and general work, so sync cannot starve the RPC",
+      "One actor owns its state, so nothing else can reach in and change it",
+    ],
+    icon: `<rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" />`,
+  },
+  {
+    title: "A failure is contained",
+    lead: "Supervision restarts a subtree, not the process.",
+    items: [
+      "A failing network restarts under its supervisor",
+      "The other networks keep syncing and serving throughout",
+      "The blast radius of a fault is the subtree it happened in",
+    ],
+    icon: `<path d="M12 3a9 9 0 1 0 9 9" /><polyline points="12 7 12 12 15 14" /><polyline points="21 3 21 9 15 9" />`,
+  },
+  {
+    title: "Bounded under load",
+    lead: "Streams pull only as fast as they can process.",
+    items: [
+      "Backpressure from the consumer to the producer",
+      "A fast peer cannot grow the heap faster than sync drains it",
+      "Memory stays bounded during a full sync rather than tracking peer speed",
+    ],
+    icon: `<path d="M3 6h18M6 12h12M9 18h6" /><polyline points="12 21 12 15" />`,
+  },
+  {
+    title: "Bugs that cannot be written",
+    lead: "The type system rejects them at compile time.",
+    items: [
+      "Algebraic data types for consensus state",
+      "Exhaustive pattern matching on every variant",
+      "Immutable data by default, so shared state cannot race",
+      "Errors surface in the build, not in a block",
+    ],
+    icon: `<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><polyline points="9 12 11 14 15 10" />`,
+  },
+  {
+    title: "Proven libraries, not rewrites",
+    lead: "The JVM ecosystem does the parts it already does well.",
+    items: [
+      "BouncyCastle for cryptography, with a long audit history",
+      "RocksDB for storage, through its own JNI bindings",
+      "Nothing security-critical reimplemented for the sake of it",
+    ],
+    icon: `<rect x="3" y="7" width="18" height="13" rx="1.5" /><path d="M8 7V5a4 4 0 0 1 8 0v2" /><circle cx="12" cy="13" r="2" />`,
+  },
+  {
+    title: "The toolchain comes free",
+    lead: "It is a JVM process like any other.",
+    items: [
+      "JFR, async-profiler, JMX, heap dumps",
+      "No foreign-language bridge to cross",
+      "Nothing new to learn to diagnose it",
+    ],
+    icon: `<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />`,
+  },
+];
+---
+
+<BaseLayout
+  title="Architecture"
+  description="How Tyto is built: a consensus-agnostic execution engine, per-network parameters, a pluggable consensus driver, and a module graph the build keeps acyclic."
+>
+  <main>
+    <NavHeader />
+    <div id="main-content">
+      <PageHero
+        eyebrow="Architecture"
+        title="How Tyto is built"
+        description="Execution is separated from consensus, and network-specific behavior is a parameter rather than a branch in the engine. That is what lets one binary serve networks with different consensus models, and lets a new network be a definition instead of a rewrite."
+        ctas={[
+          { label: "Networks", href: "/networks", primary: true },
+          { label: "GitHub", href: REPO_URL, external: true },
+        ]}
+      />
+
+      <section class="section-ty">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="arch__head">
+              <span class="cell-label">Design principles</span>
+              <h2 class="section-title arch__title">What the structure is for</h2>
+              <p class="section-subtitle">
+                These commitments shape everything below. They are stated as constraints rather than
+                goals, because each one rules out a shortcut that would otherwise be tempting.
+              </p>
+            </div>
+          </FadeIn>
+
+          <ProofCardGrid cards={PRINCIPLES} />
+        </div>
+      </section>
+
+      <section class="section-ty section-ty--elev">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="arch__head">
+              <span class="cell-label">The layers</span>
+              <h2 class="section-title arch__title">The layers, read top to bottom</h2>
+              <p class="section-subtitle">
+                Each layer depends only on the one beneath it. Swapping the consensus driver, adding
+                a network, or deriving L2 blocks all happen above the execution engine, so none of
+                them reaches the EVM. Reward and finalization are a per-family hook, which is why
+                there is no branch on the consensus model anywhere in shared code.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <SegmentGrid segments={LAYERS} headingLevel={3} />
+          </FadeIn>
+
+          <FadeIn delay={160}>
+            <div class="arch-more">
+              <a href="/networks" class="callout-ty__link">
+                See the network framework
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </a>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="arch__head">
+              <span class="cell-label">The module graph</span>
+              <h2 class="section-title arch__title">How the layering is enforced</h2>
+              <p class="section-subtitle">
+                Tyto is built as sixteen modules, and each one declares exactly which others it is
+                allowed to use. A module can only use modules below it in this table.
+              </p>
+              <p class="section-subtitle">
+                Code that reaches upward does not compile. If something in the EVM tried to call
+                into the RPC layer the build would reject it, so the separation holds on its own
+                instead of depending on someone catching it in review. Each module also builds and
+                runs its tests without the others, which is what makes any one of them possible to
+                work on alone.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <DataTable
+              caption="Build modules and their declared dependencies, top of the stack downward"
+              columns={MODULE_COLUMNS}
+              rows={MODULES}
+              minWidth="46rem"
+            />
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty section-ty--elev">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="arch__head">
+              <span class="cell-label">The runtime</span>
+              <h2 class="section-title arch__title">Why this stack, for this problem</h2>
+              <p class="section-subtitle">
+                A node is a long-lived process doing a great deal of concurrent I/O at once: peer
+                management, gossip, chain sync, the transaction pool, block import, execution, RPC
+                serving and indexing. Each of those has to stay responsive while the others are busy
+                with expensive work, and all of them have to survive a network that misbehaves
+                rather than merely tolerating one that does not. That is the shape of the problem,
+                and it is what the stack was chosen against.
+              </p>
+              <p class="section-subtitle">
+                <a href={PEKKO_URL} target="_blank" rel="noopener noreferrer" class="arch__link"
+                  >Apache Pekko</a
+                > actors match that shape most directly. Every subsystem in the module list above is an
+                actor tree that communicates by message rather than by shared memory, which is what makes
+                backpressure, failure isolation and supervised restart properties of the structure instead
+                of things to remember.
+              </p>
+              <p class="section-subtitle">
+                <a href={SCALA_URL} target="_blank" rel="noopener noreferrer" class="arch__link"
+                  >Scala 3</a
+                > carries the part that changes. Fork rules, state transitions and validation pipelines
+                are where a protocol evolves, and a type system that turns an unhandled case into a build
+                failure is worth more there than anywhere else in the codebase.
+              </p>
+              <p class="section-subtitle">
+                The JVM is the runtime rather than the language, chosen for long-running behavior. A
+                process that stays up for months gives a JIT every opportunity to optimize the paths
+                that actually run, and the tooling to inspect it is already standard rather than
+                something this project had to build. The <a
+                  href={ENGINE_API_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="arch__link">Engine API</a
+                > is the seam that makes the consensus driver replaceable on top of all of it.
+              </p>
+            </div>
+          </FadeIn>
+
+          <ProofCardGrid cards={MECHANISM} columns={3} />
+        </div>
+      </section>
+    </div>
+    <FooterSection />
+  </main>
+</BaseLayout>
+
+<style>
+  .arch__head {
+    margin-bottom: 3rem;
+  }
+  .arch__title {
+    margin-bottom: 0.75rem;
+  }
+
+  /* Inline links inside a section subtitle, which is muted, so they need the accent
+     to read as links without an underline fighting the surrounding text. */
+  .arch__link {
+    color: var(--accent);
+    font-weight: var(--weight-semibold);
+  }
+  .arch__link:hover,
+  .arch__link:focus-visible {
+    text-decoration: underline;
+  }
+
+  .arch-more {
+    margin-top: 2.5rem;
+  }
+  .arch-more a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+</style>

@@ -1,0 +1,157 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import NavHeader from "@/components/sections/NavHeader.astro";
+import FooterSection from "@/components/sections/FooterSection.astro";
+import FadeIn from "@/components/ui/FadeIn.astro";
+import PageHero from "@/components/ui/PageHero.astro";
+import SegmentGrid, { type Segment } from "@/components/ui/SegmentGrid.astro";
+import DataTable, { type DataTableColumn } from "@/components/ui/DataTable.astro";
+import NetworksSection from "@/components/sections/NetworksSection.astro";
+
+// What a configuration supplies. A reader arrives wanting two different things from
+// this page: which networks are ready to run, and what it takes to point the client
+// at one that is not on the list. This table answers the second.
+const DEFINE_COLUMNS: readonly DataTableColumn[] = [
+  { label: "What" },
+  { label: "Why it is separate" },
+];
+
+// The three identities are genuinely independent, and conflating them is a common
+// source of configuration bugs on a custom network.
+const DEFINE: readonly (readonly string[])[] = [
+  ["Chain ID", "Signs transactions, so it decides what a signature is valid on"],
+  ["Network ID", "Gates peering, so it decides who a node will talk to"],
+  ["Genesis hash", "Identifies the data directory, so it decides which chain a database holds"],
+  ["Fork schedule", "By block number or by timestamp, depending on the family"],
+  ["Gas schedule", "Fee mechanics and any divergence from mainnet pricing"],
+  ["Consensus driver", "What decides which block is canonical"],
+];
+
+const ISOLATION: readonly Segment[] = [
+  {
+    tag: "PER NETWORK",
+    name: "state",
+    description:
+      "Each network keeps its own storage. Nothing is shared, so one chain's sync cannot corrupt or bloat another's database.",
+  },
+  {
+    tag: "PER NETWORK",
+    name: "metrics",
+    description:
+      "Each network gets its own metrics registry, so a dashboard reads one chain rather than an aggregate of several.",
+    accent: true,
+  },
+  {
+    tag: "PER NETWORK",
+    name: "config",
+    description:
+      "Fork schedule, peers, RPC surface and consensus module are all set per network, in one process with one supply chain to audit.",
+  },
+];
+---
+
+<BaseLayout
+  title="Supported networks"
+  description="The networks Tyto is configured to run, what per-network isolation means in one process, and the consensus families the seam can be pointed at."
+>
+  <main>
+    <NavHeader />
+    <div id="main-content">
+      <PageHero
+        eyebrow="Networks"
+        title="Supported networks"
+        description="The configured networks ship ready to run, each production network with its testnet. Everything that distinguishes one network from another is a value in a config file rather than a branch in the code, which is what lets the same binary be pointed at a consortium chain, a sidechain or a rollup without a different build."
+        ctas={[
+          { label: "Quick Start", href: "/guide", primary: true },
+          { label: "Architecture", href: "/architecture" },
+        ]}
+      />
+
+      <NetworksSection />
+
+      <section class="section-ty section-ty--elev">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="net__head">
+              <span class="cell-label">Definition</span>
+              <h2 class="section-title net__title">What makes one network different</h2>
+              <p class="section-subtitle">
+                A network is a set of values, not a build. These are what a configuration supplies,
+                and pointing Tyto at a different chain means supplying a different set rather than
+                compiling a different client.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <DataTable
+              caption="The values that define a network, and what each one governs"
+              columns={DEFINE_COLUMNS}
+              rows={DEFINE}
+              minWidth="40rem"
+            />
+          </FadeIn>
+
+          <FadeIn delay={160}>
+            <p class="net__after">
+              The first three are independent on purpose. Chain ID signs transactions, network ID
+              gates peering, and the genesis hash identifies a data directory, so a custom network
+              can share one with another chain and differ on the rest. Treating them as a single
+              identity is a common way to end up with a node that peers happily and then rejects
+              every transaction it receives.
+            </p>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="net__head">
+              <span class="cell-label">Concurrency</span>
+              <h2 class="section-title net__title">What running networks concurrently means</h2>
+              <p class="section-subtitle">
+                Tyto supervises each network as a separate unit. The networks share a process but
+                not their data, so one network's sync cannot affect another's.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <SegmentGrid segments={ISOLATION} headingLevel={3} />
+          </FadeIn>
+
+          <FadeIn delay={160}>
+            <div class="cell-ty callout-ty net__note">
+              <p class="callout-ty__text">
+                The network list above is what ships configured. The consensus module it sits on is
+                a seam, so a deployment can point it at a consortium chain, a sidechain, or an L2
+                without a different build.
+              </p>
+              <a href="/consortium" class="callout-ty__link">Permissioned and private networks →</a>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+    </div>
+    <FooterSection />
+  </main>
+</BaseLayout>
+
+<style>
+  .net__head {
+    margin-bottom: 3rem;
+  }
+  .net__title {
+    margin-bottom: 0.75rem;
+  }
+  .net__after {
+    margin-top: 1.5rem;
+    font-size: var(--text-base);
+    color: var(--text-muted);
+    line-height: 1.65;
+  }
+  .net__note {
+    margin-top: 2.5rem;
+  }
+</style>

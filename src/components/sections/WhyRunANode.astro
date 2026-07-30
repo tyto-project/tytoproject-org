@@ -1,0 +1,166 @@
+---
+import FadeIn from "@/components/ui/FadeIn.astro";
+import { routesInGroup } from "@/data/site";
+import { ROUTES } from "@/data/site";
+
+/**
+ * The on-ramp, and the homepage's routing step.
+ *
+ * A reader who does not already know they want a node gets the reason first, then a
+ * route into whichever track fits them. Labels come from ROUTES so a renamed page
+ * cannot leave a stale label behind here.
+ */
+const label = (path: string) => ROUTES.find((route) => route.path === path)!.label;
+
+const REASONS = [
+  {
+    heading: "You verify the chain yourself",
+    body: "A node checks every block against the protocol rules before accepting it. A public endpoint gives you whatever answer it has, and you cannot check it.",
+  },
+  {
+    heading: "No rate limits and no provider",
+    body: "Hosted endpoints have quotas, get deprecated, and go down. A node you run has none of those, and nothing sits between you and the network.",
+  },
+  {
+    heading: "Mining and staking need one",
+    body: "Mining and staking both require a node. So does serving RPC to other people, or keeping the history that other operators bootstrap from.",
+  },
+];
+
+// Bodies are editorial and keyed by path; the SET of tracks is derived from ROUTES,
+// so a new `use` route appears here automatically rather than being reachable in the
+// footer and invisible on the homepage.
+const TRACK_BODY: Record<string, string> = {
+  "/energy": "Proof-of-Work as a flexible industrial load, and the mining economy built on it.",
+  "/institutions": "Decentralization as evidence, settlement finality, and JVM-native deployment.",
+  "/consortium": "Permissioned and private networks, with consensus chosen per deployment.",
+  "/infrastructure":
+    "Bootnodes, state serving and an RPC relay, for standing a network up rather than joining one.",
+};
+
+const TRACKS = routesInGroup("use").map((route) => ({
+  path: route.path,
+  body: TRACK_BODY[route.path] ?? route.summary,
+}));
+---
+
+<section class="section-ty section-bordered" id="why-run">
+  <div class="container-ty">
+    <FadeIn>
+      <div class="why-run__head">
+        <span class="cell-label">The case for it</span>
+        <h2 class="section-title why-run__title">Why run a node?</h2>
+        <p class="section-subtitle">
+          A node validates the chain for itself. Everything else relies on some other machine to do
+          it for you.
+        </p>
+      </div>
+    </FadeIn>
+
+    <div class="why-run__reasons">
+      {
+        REASONS.map((reason, i) => (
+          <FadeIn delay={i * 80}>
+            <div class="why-run__reason">
+              <h3 class="why-run__reason-title">{reason.heading}</h3>
+              <p class="why-run__reason-body">{reason.body}</p>
+            </div>
+          </FadeIn>
+        ))
+      }
+    </div>
+
+    <FadeIn delay={240}>
+      <div class="why-run__tracks">
+        <p class="why-run__tracks-label">What are you running it for?</p>
+        <ul class="why-run__track-list">
+          {
+            TRACKS.map((track) => (
+              <li>
+                <a href={track.path} class="card-ty why-run__track">
+                  <span class="why-run__track-title">{label(track.path)} →</span>
+                  <span class="why-run__track-body">{track.body}</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </FadeIn>
+  </div>
+</section>
+
+<style>
+  .why-run__head {
+    margin-bottom: 3rem;
+  }
+  .why-run__title {
+    margin-bottom: 0.75rem;
+  }
+
+  .why-run__reasons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+
+  .why-run__reason {
+    padding: 1.75rem;
+    border: 1px solid var(--border);
+    height: 100%;
+  }
+
+  .why-run__reason-title {
+    font-size: var(--text-md);
+    font-weight: var(--weight-bold);
+    color: var(--text);
+    letter-spacing: -0.01em;
+    margin-bottom: 0.5rem;
+  }
+
+  .why-run__reason-body {
+    font-size: var(--text-base);
+    color: var(--text-muted);
+    line-height: 1.65;
+  }
+
+  .why-run__tracks-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-subtle);
+    margin-bottom: 1rem;
+  }
+
+  .why-run__track-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+
+  .why-run__track {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    padding: 1.5rem;
+    height: 100%;
+    text-decoration: none;
+  }
+
+  .why-run__track-title {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--accent);
+  }
+
+  .why-run__track-body {
+    font-size: var(--text-base);
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+</style>

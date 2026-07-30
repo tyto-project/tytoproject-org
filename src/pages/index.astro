@@ -1,0 +1,35 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import NavHeader from "@/components/sections/NavHeader.astro";
+import HeroSection from "@/components/sections/HeroSection.astro";
+import WhatIsTyto from "@/components/sections/WhatIsTyto.astro";
+import WhyTyto from "@/components/sections/WhyTyto.astro";
+import WhyRunANode from "@/components/sections/WhyRunANode.astro";
+import InstallSection from "@/components/sections/InstallSection.astro";
+import ProjectSection from "@/components/sections/ProjectSection.astro";
+import CTABannerSection from "@/components/sections/CTABannerSection.astro";
+import FooterSection from "@/components/sections/FooterSection.astro";
+
+// The homepage is a hub. MiningSection, InstitutionalSection, OperationsSection and
+// NetworksSection each moved to the page that owns their subject, so a claim is made
+// once and in one place: /mining, /institutions, /operations and /networks.
+//
+// WhyRunANode is the on-ramp and the routing step: it establishes why a node is worth
+// running before the page differentiates, then hands off to the audience tracks.
+---
+
+<BaseLayout>
+  <main>
+    <NavHeader />
+    <div id="main-content">
+      <HeroSection />
+      <WhatIsTyto />
+      <InstallSection />
+      <WhyRunANode />
+      <WhyTyto />
+      <ProjectSection />
+      <CTABannerSection />
+    </div>
+    <FooterSection />
+  </main>
+</BaseLayout>

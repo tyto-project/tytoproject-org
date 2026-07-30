@@ -1,0 +1,84 @@
+---
+export interface Segment {
+  /** Short eyebrow above the name, rendered in the shared .cell-label style. */
+  tag: string;
+  name: string;
+  description: string;
+  /** Tints one segment to mark it as the one that matters most. */
+  accent?: boolean;
+}
+
+interface Props {
+  segments: readonly Segment[];
+  /**
+   * Heading level for the segment names. Defaults to 2 for a page whose only
+   * other heading is the PageHero h1; pass 3 when nested under a section h2.
+   */
+  headingLevel?: 2 | 3 | 4;
+}
+
+const { segments, headingLevel = 2 } = Astro.props;
+
+// The names carry the page's heading structure, so they are headings rendered in
+// the mono face, not <code> elements. They read as identifiers either way, but
+// only one of the two gives the page an outline.
+const Heading = `h${headingLevel}` as "h2" | "h3" | "h4";
+---
+
+<div class="segment-grid">
+  {
+    segments.map((segment) => (
+      <div class:list={["segment-grid__cell", segment.accent && "segment-grid__cell--accent"]}>
+        <span class="cell-label">{segment.tag}</span>
+        <Heading class="segment-grid__name">{segment.name}</Heading>
+        <p class="segment-grid__desc">{segment.description}</p>
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  /* Reflows rather than staying N-up at every width; seams drawn by adjacency so
+     they cannot desync from the column count. */
+  .segment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    border: 1px solid var(--border);
+  }
+  .segment-grid__cell + .segment-grid__cell {
+    border-top: 1px solid var(--border);
+  }
+  @media (min-width: 860px) {
+    .segment-grid__cell + .segment-grid__cell {
+      border-top: none;
+      border-left: 1px solid var(--border);
+    }
+  }
+
+  .segment-grid__cell {
+    padding: 2rem 1.75rem;
+  }
+  .segment-grid__cell--accent {
+    background: var(--accent-soft);
+  }
+  .segment-grid__cell--accent .cell-label,
+  .segment-grid__cell--accent .segment-grid__name {
+    color: var(--accent);
+  }
+
+  .segment-grid__name {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 1.0625rem;
+    font-weight: var(--weight-bold);
+    color: var(--text);
+    letter-spacing: -0.01em;
+    margin-bottom: 0.75rem;
+  }
+
+  .segment-grid__desc {
+    font-size: var(--text-base);
+    color: var(--text-muted);
+    line-height: 1.65;
+  }
+</style>

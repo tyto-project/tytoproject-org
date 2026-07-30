@@ -1,0 +1,598 @@
+---
+import { getCollection } from "astro:content";
+import { CONTAINER_REF, networkFlag, RELEASES_URL } from "@/data/site";
+import { groupByFamily } from "@/data/network-families";
+import DataTable, { type DataTableColumn } from "@/components/ui/DataTable.astro";
+import FadeIn from "@/components/ui/FadeIn.astro";
+
+const ADOPTIUM_URL = "https://adoptium.net/temurin/releases/";
+
+const INSTALL_TABS = [
+  { id: "linux", label: "Linux" },
+  { id: "macos", label: "macOS" },
+  { id: "windows", label: "Windows" },
+  { id: "docker", label: "Docker" },
+] as const;
+
+// The JDK comes from the distribution that publishes it, not from a third-party
+// version manager. On Linux that is the distro's own OpenJDK package; elsewhere it is
+// the vendor's installer.
+const INSTALL_CODE: Record<string, string> = {
+  linux: `# 1. Install the current JDK LTS (25)
+sudo apt update && sudo apt install -y openjdk-25-jdk    # Debian, Ubuntu
+# sudo dnf install java-25-openjdk-devel                 # Fedora, RHEL
+java -version
+
+# 2. Download and extract the Linux distribution
+curl -LO ${RELEASES_URL}/latest/download/tyto-<ver>-linux.tar.gz
+tar -xzf tyto-<ver>-linux.tar.gz
+
+# 3. Put the launcher on PATH, then verify
+export PATH="$PWD/tyto-<ver>/bin:$PATH"
+tyto --version`,
+  macos: `# 1. Install the current JDK LTS (25)
+#    Download the macOS .pkg for your architecture from adoptium.net
+#    and run it, then confirm it is on PATH:
+java -version
+
+# 2. Download and extract the macOS distribution
+curl -LO ${RELEASES_URL}/latest/download/tyto-<ver>-macos.tar.gz
+tar -xzf tyto-<ver>-macos.tar.gz
+
+# 3. Put the launcher on PATH, then verify
+export PATH="$PWD/tyto-<ver>/bin:$PATH"
+tyto --version`,
+  windows: `# 1. Install the current JDK LTS (25)
+#    Download the Windows .msi from adoptium.net and run it,
+#    then confirm it is on PATH:
+java -version
+
+# 2. Download and extract the Windows distribution
+Invoke-WebRequest \`
+  -Uri "${RELEASES_URL}/latest/download/tyto-<ver>-windows.zip" \`
+  -OutFile tyto.zip
+Expand-Archive tyto.zip -DestinationPath .
+
+# 3. Put the launcher on PATH, then verify
+$env:Path += ";$PWD\\tyto-<ver>\\bin"
+tyto --version`,
+  docker: `# No JDK required, the image bundles everything
+docker pull ${CONTAINER_REF}:latest
+
+# Verify
+docker run ${CONTAINER_REF}:latest --version`,
+};
+
+const SOURCE_BUILD_CODE = `# Requires the current JDK LTS (25) and sbt, the Scala build tool
+git clone https://github.com/tyto-project/tyto-cli
+cd tyto && sbt assembly
+# Output: target/tyto-assembly-<ver>.jar`;
+
+// Column-width form: the essential command only. The full version with the volume
+// mount runs full-width below, where long lines fit.
+const RUN_MINIMAL = (arg: string) => `docker run ${CONTAINER_REF} ${networkFlag(arg)}`;
+
+const RUN_CODE_TEMPLATE = (arg: string) => `# Native
+tyto ${networkFlag(arg)}
+
+# Docker
+docker run -v tyto-data:/var/lib/tyto \\
+  ${CONTAINER_REF}:latest ${networkFlag(arg)}`;
+
+// Proof-of-Stake needs a consensus layer. Tyto can run one itself, or be driven by
+// an external client over the Engine API. Both are shown because both are supported.
+const RUN_POS_EXTRA = (arg: string) => `# Consensus layer in the same process
+tyto ${networkFlag(arg)} \\
+  --consensus-layer-enabled \\
+  --fee-recipient=0xYourAddress
+
+# Or drive it with an external consensus client, sharing one
+# JWT secret over the Engine API on localhost
+openssl rand -hex 32 | tr -d "\\n" > jwt.hex
+tyto ${networkFlag(arg)} \\
+  --engine-rpc-enabled \\
+  --engine-rpc-port=8551 \\
+  --engine-jwt-secret=./jwt.hex`;
+
+const NETWORK_COLUMNS: readonly DataTableColumn[] = [
+  { label: "Network" },
+  { label: "Argument", mono: true },
+  { label: "Consensus" },
+  { label: "Chain ID", mono: true },
+];
+
+const byOrder = (a: { data: { order: number } }, b: { data: { order: number } }) =>
+  a.data.order - b.data.order;
+
+// Chain IDs and launch arguments come from the networks collection, so this
+// table cannot drift from NetworksSection or llms.txt.
+const allNetworks = (await getCollection("networks")).sort(byOrder).map((n) => n.data);
+
+// Chain IDs and launch arguments come from the networks collection, so nothing here
+// can drift from NetworksSection or llms.txt.
+const NETWORK_ROWS = allNetworks.map((n) => [n.name, n.arg, n.consensus, String(n.chainId)]);
+
+// One column per consensus family, same grouping the /networks NetworksSection uses.
+const FAMILIES = groupByFamily(allNetworks).map((f) => ({
+  ...f,
+  // Command is built here, not in the template: an expression spanning lines
+  // inside <pre> gets reflowed by the formatter and the indentation renders.
+  cmd: RUN_MINIMAL((f.networks.find((n) => n.primary) ?? f.networks[0]!).arg),
+}));
+
+// What each family needs operationally. Keyed by family so an unknown one degrades
+// to no note rather than throwing.
+const FAMILY_NOTE: Record<string, string> = {
+  "Ethereum Classic":
+    "Runs standalone. Proof-of-Work needs no consensus layer, so this is the whole deployment.",
+  Ethereum:
+    "Needs a consensus layer. Tyto can run one in the same process, or be driven by an external consensus client over the Engine API.",
+};
+
+const REQUIREMENT_COLUMNS: readonly DataTableColumn[] = [
+  { label: "What" },
+  { label: "Requirement" },
+  { label: "What drives it" },
+];
+
+const REQUIREMENT_ROWS = (await getCollection("hardware"))
+  .sort(byOrder)
+  .map((h) => [h.data.item, h.data.requirement, h.data.note]);
+
+// The two production networks, read from the collection rather than typed here.
+// Both primaries run standalone: Proof-of-Work needs no consensus layer, and on
+// Proof-of-Stake Tyto ships one.
+const primaries = allNetworks.filter((n) => n.primary);
+const POS = primaries.find((n) => n.consensus.startsWith("PoS"))!;
+
+// On-site destinations. These were four docs.tytoproject.org deep links and were the only
+// forward path out of the quick start, which made the whole section depend on pages
+// nothing here could verify.
+const NEXT_STEPS = [
+  {
+    title: "Stake (PoS)",
+    body: "Tyto ships the consensus layer, or pair an external one over the Engine API.",
+    href: "/staking",
+  },
+  {
+    title: "Mine (PoW)",
+    body: "Configure a coinbase address and connect a miner. Applies to every configured Proof-of-Work network.",
+    href: "/mining",
+  },
+  {
+    title: "Archive node",
+    body: "Full history retained, which multiplies the disk requirement.",
+    href: "/operations",
+  },
+  {
+    title: "Run as a service",
+    body: "Keep the node running under systemd (Linux), launchd (macOS), or a Windows Service.",
+    href: "/operations",
+  },
+] as const;
+---
+
+<section class="section-ty" id="quickstart">
+  <div class="container-ty">
+    <FadeIn>
+      <div class="quickstart__head">
+        <h2 class="section-title quickstart__title">Install and run</h2>
+        <p class="section-subtitle">
+          Two steps: get the binary onto the machine, then tell it which network to join. The
+          network is a single argument, and the ones below are configured and ready. Testnets take
+          the same commands with a different argument.
+        </p>
+        <p class="section-subtitle">
+          What you get is a full node: it validates every block against the protocol rules rather
+          than trusting a peer, serves JSON-RPC locally, and keeps its own copy of state. The first
+          sync takes hours to days depending on the network and the disk, and the node is usable for
+          reads well before it reaches the tip.
+        </p>
+      </div>
+    </FadeIn>
+
+    <FadeIn delay={160}>
+      <div class="quickstart__layer">
+        <span class="cell-label">Layer 1: Install</span>
+        <p class="quickstart__lead">
+          Get the binary onto your machine. Native installs require JDK 25 LTS, from your
+          distribution's OpenJDK package or from <a
+            href={ADOPTIUM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="quickstart__link">Eclipse Temurin</a
+          >. The Docker image bundles everything.
+        </p>
+
+        <div class="install">
+          <div class="install-tabs tab-btn-row" role="tablist" aria-label="Install method">
+            {
+              INSTALL_TABS.map((tab, i) => (
+                <button
+                  type="button"
+                  role="tab"
+                  id={`install-tab-${tab.id}`}
+                  class="tab-btn install-tab"
+                  aria-selected={i === 0 ? "true" : "false"}
+                  aria-controls={`install-panel-${tab.id}`}
+                  tabindex={i === 0 ? 0 : -1}
+                  data-tab={tab.id}
+                >
+                  {tab.label}
+                </button>
+              ))
+            }
+          </div>
+
+          {
+            INSTALL_TABS.map((tab, i) => (
+              <div
+                class="code-block install-panel"
+                role="tabpanel"
+                id={`install-panel-${tab.id}`}
+                aria-labelledby={`install-tab-${tab.id}`}
+                data-panel={tab.id}
+                hidden={i !== 0}
+              >
+                <pre>{INSTALL_CODE[tab.id]}</pre>
+              </div>
+            ))
+          }
+        </div>
+
+        <details class="quickstart__details">
+          <summary>Build from source (advanced, requires Scala toolchain)</summary>
+          <div class="code-block">
+            <pre>{SOURCE_BUILD_CODE}</pre>
+          </div>
+        </details>
+      </div>
+    </FadeIn>
+
+    <FadeIn delay={200}>
+      <div class="quickstart__layer">
+        <span class="cell-label">Layer 2: Run a node</span>
+        <p class="quickstart__lead">
+          Once installed, the network is a single argument. The two production networks are below;
+          their testnets take the same commands with a different argument.
+        </p>
+
+        <div class="cell-grid-2col qs-families">
+          {
+            FAMILIES.map((f) => (
+              <div class:list={["qs-family", f.modifier]}>
+                <div class="qs-family__head">
+                  <div>
+                    <span class="cell-label qs-family__consensus">{f.consensus}</span>
+                    <h3 class="qs-family__name">{f.family}</h3>
+                  </div>
+                  <span class={f.badgeClass}>{f.badgeLabel}</span>
+                </div>
+
+                <div class="qs-family__body">
+                  <p class="qs-family__note">{FAMILY_NOTE[f.family]}</p>
+                  <code class="code-block qs-family__cmd">{f.cmd}</code>
+
+                  <ul class="qs-family__nets">
+                    {f.networks.map((n) => (
+                      <li>
+                        <span class="qs-family__net-name">{n.name}</span>
+                        <code class="qs-family__net-arg">{n.arg}</code>
+                        <span class="qs-family__net-chain">chain {n.chainId}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ))
+          }
+        </div>
+
+        <p class="quickstart__lead qs-full-lead">
+          The complete form, with persistent storage and, for Proof-of-Stake, the Engine API:
+        </p>
+
+        <div class="code-block quickstart__run">
+          <pre>{RUN_CODE_TEMPLATE("<network>")}</pre>
+        </div>
+        <div class="code-block quickstart__run">
+          <pre>{RUN_POS_EXTRA(POS.arg)}</pre>
+        </div>
+
+        <p class="quickstart__footnote">
+          Tyto pairs with Lighthouse, Prysm, Teku, Lodestar and Nimbus. Point your consensus
+          client at <code>http://localhost:8551</code> using the same JWT file.
+        </p>
+
+        <DataTable
+          caption="Supported networks and their launch arguments"
+          columns={NETWORK_COLUMNS}
+          rows={NETWORK_ROWS}
+          minWidth="34rem"
+        />
+      </div>
+    </FadeIn>
+
+    <FadeIn delay={240}>
+      <div class="quickstart__layer">
+        <span class="cell-label">Next steps</span>
+        <p class="quickstart__lead">
+          A syncing full node is the default. These add a role on top of it. Mining applies to
+          Proof-of-Work networks; validating applies to Proof-of-Stake networks.
+        </p>
+
+        <div class="quickstart__steps">
+          {
+            NEXT_STEPS.map((card) => (
+              <a href={card.href} class="card-ty quickstart__step">
+                <div>
+                  <h3 class="quickstart__step-title">{card.title}</h3>
+                  <p class="quickstart__step-body">{card.body}</p>
+                </div>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="quickstart__step-arrow"
+                  aria-hidden="true"
+                >
+                  <line x1="7" y1="17" x2="17" y2="7" />
+                  <polyline points="7 7 17 7 17 17" />
+                </svg>
+              </a>
+            ))
+          }
+        </div>
+      </div>
+    </FadeIn>
+
+    <FadeIn delay={280}>
+      <div class="quickstart__layer">
+        <span class="cell-label">Before you start</span>
+        <DataTable
+          caption="What a node needs, and what determines each requirement"
+          columns={REQUIREMENT_COLUMNS}
+          rows={REQUIREMENT_ROWS}
+          minWidth="26rem"
+        />
+      </div>
+    </FadeIn>
+  </div>
+</section>
+
+<script>
+  // Tabs follow the WAI-ARIA tabs pattern: selection lives in aria-selected and
+  // panel visibility in the `hidden` attribute, so no inline styles are written.
+  document.querySelectorAll<HTMLElement>(".install").forEach((root) => {
+    const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>(".install-tab"));
+    const panels = Array.from(root.querySelectorAll<HTMLElement>(".install-panel"));
+    if (tabs.length === 0) return;
+
+    function select(index: number, focus = false) {
+      tabs.forEach((tab, i) => {
+        const active = i === index;
+        tab.setAttribute("aria-selected", String(active));
+        tab.tabIndex = active ? 0 : -1;
+        tab.classList.toggle("tab-active", active);
+      });
+      const target = tabs[index]?.dataset.tab;
+      panels.forEach((panel) => {
+        panel.hidden = panel.dataset.panel !== target;
+      });
+      if (focus) tabs[index]?.focus();
+    }
+
+    tabs.forEach((tab, i) => {
+      tab.addEventListener("click", () => select(i));
+      tab.addEventListener("keydown", (event) => {
+        const last = tabs.length - 1;
+        if (event.key === "ArrowRight") select(i === last ? 0 : i + 1, true);
+        else if (event.key === "ArrowLeft") select(i === 0 ? last : i - 1, true);
+        else if (event.key === "Home") select(0, true);
+        else if (event.key === "End") select(last, true);
+        else return;
+        event.preventDefault();
+      });
+    });
+  });
+</script>
+
+<style>
+  .quickstart__head {
+    margin-bottom: 2.5rem;
+  }
+  .quickstart__title {
+    margin-bottom: 0.75rem;
+  }
+  .quickstart__head code {
+    font-size: 0.9em;
+  }
+
+  .quickstart__layer {
+    margin-top: 3rem;
+  }
+
+  /* ---- Family split -------------------------------------------------------
+     Mirrors the /networks NetworksSection. .cell-grid-2col upstream owns the
+     column count and the dividers between children, including the flip from
+     horizontal to vertical at 768px -- do not add child borders here.
+     -------------------------------------------------------------------- */
+
+  .qs-families {
+    border: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+  }
+
+  .qs-family {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .qs-family__head {
+    padding: 1.5rem 1.75rem;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Both override .cell-label's upstream accent with the family's own. */
+  .qs-family__consensus,
+  .qs-family__name {
+    color: var(--family-accent);
+  }
+
+  .qs-family__name {
+    font-size: 1.125rem;
+    font-weight: var(--weight-bold);
+    letter-spacing: var(--tracking-tight);
+    margin-bottom: 0;
+  }
+
+  .qs-family__body {
+    padding: 1.5rem 1.75rem;
+  }
+
+  .qs-family__note {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+
+  /* A <code> rather than a <pre>: the command is a single line, so <pre> adds
+     nothing and its whitespace sensitivity lets a formatter inject indentation
+     into the rendered output. white-space comes from the expression, not source.
+     .code-block supplies overflow-x, so a long command scrolls in its column. */
+  .qs-family__cmd {
+    display: block;
+    white-space: pre;
+    margin-bottom: 1.25rem;
+  }
+
+  .qs-family__nets {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .qs-family__nets li {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .qs-family__net-name {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--text);
+  }
+
+  .qs-family__net-arg {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--family-accent);
+  }
+
+  .qs-family__net-chain {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--text-subtle);
+    margin-left: auto;
+  }
+
+  .qs-full-lead {
+    margin-top: 0.5rem;
+  }
+
+  .quickstart__link {
+    color: var(--accent);
+    font-weight: var(--weight-semibold);
+  }
+  .quickstart__link:hover,
+  .quickstart__link:focus-visible {
+    text-decoration: underline;
+  }
+
+  .quickstart__lead {
+    font-size: var(--text-base);
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+  }
+
+  .tab-btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .quickstart__run,
+  .quickstart__details {
+    margin-top: 1rem;
+  }
+
+  .quickstart__details summary {
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--text-subtle);
+    padding-block: 0.5rem;
+  }
+  .quickstart__details summary:hover {
+    color: var(--accent);
+  }
+  .quickstart__details .code-block {
+    margin-top: 0.75rem;
+  }
+
+  .quickstart__footnote {
+    font-size: var(--text-sm);
+    color: var(--text-subtle);
+    line-height: 1.6;
+    margin-top: 1rem;
+  }
+
+  .quickstart__steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+
+  .quickstart__step {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.5rem;
+    text-decoration: none;
+  }
+
+  .quickstart__step-title {
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
+    color: var(--text);
+    margin-bottom: 0.375rem;
+    letter-spacing: -0.01em;
+  }
+
+  .quickstart__step-body {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+
+  .quickstart__step-arrow {
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+</style>

@@ -1,0 +1,364 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import NavHeader from "@/components/sections/NavHeader.astro";
+import FooterSection from "@/components/sections/FooterSection.astro";
+import FeaturesSection from "@/components/sections/FeaturesSection.astro";
+import FadeIn from "@/components/ui/FadeIn.astro";
+import ProofCardGrid, { type ProofCard } from "@/components/ui/ProofCardGrid.astro";
+import PageHero from "@/components/ui/PageHero.astro";
+
+const MCP_URL = "https://modelcontextprotocol.io/";
+
+const MCP_CARDS: readonly ProofCard[] = [
+  {
+    title: "Node state, as tools",
+    lead: "What the agent can ask for.",
+    items: [
+      "Sync progress and chain height",
+      "Peer counts and connection state",
+      "Block and receipt data",
+    ],
+    icon: `<rect x="3" y="4" width="18" height="16" rx="1.5" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="9" y1="9" x2="9" y2="20" />`,
+  },
+  {
+    title: "No integration layer",
+    lead: "The server is part of the node.",
+    items: [
+      "Nothing to deploy beside the client",
+      "Speaks to any MCP-compatible agent",
+      "Same process, same lifecycle",
+    ],
+    icon: `<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />`,
+  },
+  {
+    title: "Agent to agent, too",
+    lead: "Not only a tool server.",
+    items: [
+      "A2A for agent-to-agent coordination",
+      "ACP alongside it",
+      "Async tasks for work that outlasts a request",
+      "OAuth 2.1 identity on the interface",
+    ],
+    icon: `<circle cx="6" cy="7" r="3" /><circle cx="18" cy="17" r="3" /><path d="M9 7h6a3 3 0 0 1 3 3v4M15 17H9a3 3 0 0 1-3-3v-4" />`,
+  },
+  {
+    title: "What it is for",
+    lead: "Operations, not trading.",
+    items: [
+      "Infrastructure automation",
+      "Anomaly detection against live state",
+      "Runbook execution",
+    ],
+    icon: `<circle cx="12" cy="12" r="3" /><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" />`,
+  },
+];
+
+/**
+ * Capability rows for the support table.
+ *
+ * `color` is purely decorative and groups related rows by family. It carries no
+ * status meaning, and neither does this table: it is a list of capability areas and
+ * what each covers, deliberately making no per-row claim about stage. An earlier
+ * version used `muted` to mark an in-progress group, which dated the page the moment
+ * anything moved. Do not reintroduce a status here, in the labels or in the color.
+ */
+const PROTOCOLS = [
+  {
+    category: "Wire protocols",
+    tags: [
+      { label: "ETH68", color: "blue" },
+      { label: "ETH69", color: "blue" },
+      { label: "ETH70", color: "blue" },
+      { label: "ETH71", color: "blue" },
+    ],
+  },
+  {
+    category: "Discovery",
+    tags: [
+      { label: "discv4", color: "blue" },
+      { label: "discv5", color: "blue" },
+    ],
+  },
+  {
+    category: "State sync",
+    tags: [
+      { label: "SNAP V1", color: "teal" },
+      { label: "SNAP V2", color: "teal" },
+      { label: "Full sync", color: "teal" },
+      { label: "Archive mode", color: "teal" },
+    ],
+  },
+  {
+    category: "History",
+    tags: [
+      { label: "ERA1 import", color: "teal" },
+      { label: "BitTorrent distribution", color: "teal" },
+    ],
+  },
+  {
+    category: "Proof-of-Work",
+    tags: [
+      { label: "ETChash", color: "green" },
+      { label: "ECIP-1099", color: "green" },
+      { label: "eth_getWork", color: "green" },
+      { label: "eth_submitWork", color: "green" },
+    ],
+  },
+  {
+    category: "Proof-of-Stake",
+    tags: [
+      { label: "Engine API V1", color: "violet" },
+      { label: "V2", color: "violet" },
+      { label: "V3", color: "violet" },
+      { label: "V4", color: "violet" },
+      { label: "Built-in CL", color: "violet" },
+      { label: "External CL", color: "violet" },
+    ],
+  },
+  {
+    category: "Proof-of-Authority",
+    tags: [
+      { label: "Clique", color: "indigo" },
+      { label: "QBFT", color: "indigo" },
+      { label: "Bor-style", color: "indigo" },
+    ],
+  },
+  {
+    category: "Network families",
+    tags: [
+      { label: "Sidechains", color: "indigo" },
+      { label: "L2 rollup derivation", color: "indigo" },
+      { label: "Based rollups", color: "indigo" },
+      { label: "ZK-EVM (custom VM, zk-gas)", color: "indigo" },
+    ],
+  },
+  {
+    // Deliberately not a roster: the Engine API is a published specification, so the
+    // set of clients implementing it changes without this page changing. /staking
+    // names them where a reader is choosing one.
+    category: "Consensus clients",
+    tags: [{ label: "Any Engine API client", color: "indigo" }],
+  },
+  {
+    category: "JSON-RPC transports",
+    tags: [
+      { label: "HTTP", color: "amber" },
+      { label: "WebSocket", color: "amber" },
+      { label: "IPC", color: "amber" },
+    ],
+  },
+  {
+    category: "Agent interfaces",
+    tags: [
+      { label: "MCP server", color: "amber" },
+      { label: "A2A", color: "amber" },
+      { label: "ACP", color: "amber" },
+      { label: "Async tasks", color: "amber" },
+      { label: "OAuth 2.1", color: "amber" },
+    ],
+  },
+  {
+    category: "Other interfaces",
+    tags: [
+      { label: "GraphQL", color: "amber" },
+      { label: "dRPC-Provider bridge", color: "amber" },
+    ],
+  },
+  {
+    category: "Network roles",
+    tags: [
+      { label: "Bootnode", color: "teal" },
+      { label: "SNAP serving", color: "teal" },
+      { label: "RPC relay", color: "teal" },
+      { label: "Faucet", color: "teal" },
+    ],
+  },
+  {
+    category: "Storage",
+    tags: [
+      { label: "Hash-keyed", color: "teal" },
+      { label: "Path-keyed", color: "teal" },
+      { label: "Online pruning", color: "teal" },
+      { label: "Freezer", color: "teal" },
+    ],
+  },
+  {
+    category: "Keys and signing",
+    tags: [
+      { label: "External signer", color: "amber" },
+      { label: "HSM", color: "amber" },
+    ],
+  },
+  {
+    category: "Monitoring",
+    tags: [
+      { label: "Prometheus", color: "orange" },
+      { label: "Grafana", color: "orange" },
+      { label: "Tracing", color: "orange" },
+      { label: "/health", color: "orange" },
+      { label: "/readiness", color: "orange" },
+      { label: "/buildinfo", color: "orange" },
+    ],
+  },
+  {
+    category: "Supply chain",
+    tags: [
+      { label: "Cosign signatures", color: "orange" },
+      { label: "Build provenance", color: "orange" },
+      { label: "CycloneDX SBOM", color: "orange" },
+    ],
+  },
+] as const;
+---
+
+<BaseLayout
+  title="Features"
+  description="Tyto's capability surface by area: wire protocols, discovery, state sync, history, consensus models, network roles, storage, JSON-RPC and an MCP server."
+>
+  <main>
+    <NavHeader />
+    <div id="main-content">
+      <PageHero
+        eyebrow="Capabilities"
+        title="What Tyto supports"
+        description="Tyto speaks the same wire protocols, sync strategies and APIs as the rest of the network, across every consensus model it hosts, from one binary. The table below lists the capability surface by area."
+        ctas={[
+          { label: "Quick Start", href: "/guide", primary: true },
+          { label: "Architecture", href: "/architecture" },
+        ]}
+      />
+      <FeaturesSection />
+
+      <section class="section-ty">
+        <div class="container-ty">
+          <FadeIn delay={80}>
+            <div class="table-scroll-ty">
+              <table class="table-ty protocol-table">
+                <caption class="table-ty__caption">
+                  Protocol and API support by capability area
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Capability</th>
+                    <th scope="col">Support</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {
+                    PROTOCOLS.map((row) => (
+                      <tr>
+                        <th scope="row" class="protocol-table__area">
+                          {row.category}
+                        </th>
+                        <td>
+                          <div class="protocol-table__tags">
+                            {row.tags.map((tag) => (
+                              <span class={`proto-tag proto-tag--${tag.color}`}>{tag.label}</span>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  }
+                </tbody>
+              </table>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={160}>
+            <div class="features-page__ongoing">
+              <span class="cell-label">Never finished, by design</span>
+              <h2 class="section-title features-page__title">What does not close</h2>
+              <p class="section-subtitle">
+                Some areas around that table are continuous rather than finite, and always will be,
+                so treating either as a milestone to be reached would be the wrong shape for them.
+              </p>
+              <p class="section-subtitle">
+                <strong>Networks keep arriving.</strong> A network is a definition rather than a build,
+                so support for a new one is configuration and a fork schedule rather than a fork of the
+                client. That is what makes adding one ordinary work instead of a release event, and it
+                is why the list of what Tyto runs is expected to keep growing.
+              </p>
+              <p class="section-subtitle">
+                <strong>The EVM keeps changing.</strong> Each network sets its own upgrade schedule, and
+                a client that stops tracking them stops being able to follow the chain at all. Staying
+                current is therefore ongoing work rather than a feature that ships once: the interesting
+                question is never whether a client has finished, but whether it is still keeping pace.
+              </p>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty section-ty--elev">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="features-page__head">
+              <span class="cell-label">Agentic interface</span>
+              <h2 class="section-title features-page__title">The MCP server</h2>
+              <p class="section-subtitle">
+                <a
+                  href={MCP_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="features-page__link">Model Context Protocol</a
+                > is an open standard for exposing structured tools to AI agents. Tyto ships an MCP
+                server alongside the JSON-RPC transports, so an agent can query a running node directly
+                instead of going through a bespoke integration. A2A and ACP sit beside it for agent-to-agent
+                work, with async tasks for anything that outlasts a single request and OAuth 2.1 for identity
+                on the interface.
+              </p>
+            </div>
+          </FadeIn>
+
+          <ProofCardGrid cards={MCP_CARDS} />
+        </div>
+      </section>
+    </div>
+    <FooterSection />
+  </main>
+</BaseLayout>
+
+<style>
+  .features-page__ongoing {
+    margin-top: 3rem;
+  }
+
+  .features-page__head {
+    margin-bottom: 3rem;
+  }
+  .features-page__title {
+    margin-bottom: 0.75rem;
+  }
+  .features-page__link {
+    color: var(--accent);
+    font-weight: var(--weight-semibold);
+  }
+  .features-page__link:hover,
+  .features-page__link:focus-visible {
+    text-decoration: underline;
+  }
+
+  /* Narrower than the manifest table on /stack: the support column holds pills that
+     wrap, so it does not need a wide minimum to stay readable. */
+  .protocol-table {
+    min-width: 30rem;
+  }
+
+  .protocol-table__area {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-subtle);
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  .protocol-table__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+</style>

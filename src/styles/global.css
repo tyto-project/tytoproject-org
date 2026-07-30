@@ -1,0 +1,153 @@
+/* =========================================================================
+   tytoproject.org global stylesheet
+
+   Styling lives in this repo. src/styles/tyto/ is a copy of tyto-brand's
+   token CSS and web reference implementation, vendored rather than installed:
+   each Tyto surface uses a different styling mechanism, so only token values
+   and design intent travel between them, not a package.
+
+   To pick up upstream changes, re-copy tyto-brand/tokens/*.css into
+   tyto/tokens/ and tyto-brand/reference/web/*.css into tyto/web/, then
+   re-point the token imports in tyto/web/styles.css from ../../tokens/ to
+   ../tokens/. Do not hand-edit anything under tyto/: brand generates its
+   token CSS from DTCG JSON and edits there will be lost on the next copy.
+
+   Cascade order is <link> tags, then imported stylesheets, then component
+   scoped <style> blocks. The import below is first so components override it.
+
+   Only add a rule here if tyto/ does not provide it.
+   ========================================================================= */
+
+@import "./tyto/web/styles.css";
+
+/* ── Site chrome ─────────────────────────────────────────────────────────────
+   Not adopted upstream: navigation differs per Tyto surface, so generalizing
+   these would be speculative.
+   ───────────────────────────────────────────────────────────────────────── */
+
+.nav-github-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.875rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-muted);
+  background: transparent;
+  text-decoration: none;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out);
+}
+.nav-github-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Close to the now-shipped .nav-link, but without its padding, radius and hover
+   background. Swapping them changes how the footer renders. */
+.footer-link {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.footer-link:hover {
+  color: var(--accent);
+}
+
+/* ── Network family accents ──────────────────────────────────────────────────
+   Set on a family column root and inherited by its eyebrow and heading. Global
+   rather than scoped because two components render family columns: the /networks
+   NetworksSection and the guide's run step. Paired with src/data/network-families.ts.
+
+   The violet is a literal because the token layer has no violet role. It is the
+   only hardcoded color in this file; a candidate to raise with tyto-brand.
+   ───────────────────────────────────────────────────────────────────────── */
+
+.family--pow {
+  --family-accent: var(--ty-green-3);
+}
+.family--pos {
+  --family-accent: #a78bfa;
+}
+.family--default {
+  --family-accent: var(--accent);
+}
+
+/* ── Local surface variants ──────────────────────────────────────────────── */
+
+/* Centered variant of the upstream .panel-ty. */
+.panel-ty--center {
+  text-align: center;
+}
+
+/* Rounded accent tile holding a 22px line icon, above a card heading. */
+.icon-tile {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  margin-bottom: 1.125rem;
+  flex-shrink: 0;
+}
+
+/* Accent-ruled aside: a line of prose and a link out. */
+.callout-ty {
+  border-left: 3px solid var(--accent);
+  padding: 1.25rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.callout-ty__text {
+  font-size: var(--text-base);
+  color: var(--text-muted);
+  line-height: 1.6;
+  flex: 1;
+  min-width: 22ch;
+}
+.callout-ty__link {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--accent);
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.callout-ty__link:hover {
+  text-decoration: underline;
+}
+
+/* ── Scroll reveal ───────────────────────────────────────────────────────────
+   Requires the IntersectionObserver in BaseLayout, which adds .is-visible.
+   Kept local because it is inert without that script.
+   ───────────────────────────────────────────────────────────────────────── */
+
+[data-fade-in] {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 700ms var(--ease-out) var(--fade-delay, 0ms),
+    transform 700ms var(--ease-out) var(--fade-delay, 0ms);
+}
+[data-fade-in].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-fade-in] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

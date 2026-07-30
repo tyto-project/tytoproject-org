@@ -1,0 +1,66 @@
+---
+import FadeIn from "@/components/ui/FadeIn.astro";
+import ProofCardGrid, { type ProofCard } from "@/components/ui/ProofCardGrid.astro";
+
+const CARDS: readonly ProofCard[] = [
+  {
+    title: "One runtime",
+    lead: "Tyto runs on the JVM, like the rest of your stack.",
+    proof:
+      "Pure JVM architecture end to end, no foreign-language bridge between the chain and the rest of the stack",
+    icon: `<rect x="3" y="4" width="18" height="16" rx="1.5" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="8" y1="4" x2="8" y2="9" />`,
+  },
+  {
+    title: "Auditable releases",
+    lead: "Every release is signed and inventoried.",
+    proof:
+      "The same signed-image and SBOM discipline that regulated audit and compliance frameworks require",
+    icon: `<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><polyline points="9 12 11 14 15 10" />`,
+  },
+  {
+    title: "One binary, several networks",
+    lead: "Fewer systems to secure and staff.",
+    proof:
+      "Concurrent multi-instance execution runs every network from one binary instead of a growing fleet, with external-signer/HSM custody built in",
+    icon: `<rect x="4" y="4" width="7" height="7" rx="1" /><rect x="13" y="4" width="7" height="7" rx="1" /><rect x="4" y="13" width="7" height="7" rx="1" /><rect x="13" y="13" width="7" height="7" rx="1" />`,
+  },
+];
+---
+
+<section class="section-ty section-ty--elev" id="institutional">
+  <div class="container-ty">
+    <FadeIn>
+      <div class="institutional__head">
+        <span class="cell-label">Regulated Finance</span>
+        <h2 class="section-title institutional__title">What Tyto provides</h2>
+        <p class="section-subtitle">
+          Institutions already running JVM infrastructure need blockchain infrastructure that fits
+          the same runtime and the same audit standards, not a second, foreign-language stack to
+          secure and staff for. Tyto is JVM-native end to end, on Ethereum Classic and Ethereum
+          alike.
+        </p>
+      </div>
+    </FadeIn>
+
+    <ProofCardGrid cards={CARDS} />
+
+    <FadeIn delay={300}>
+      <div class="cell-ty callout-ty">
+        <p class="callout-ty__text">
+          Image signing, build provenance and SBOM coverage are set out in full on the operations
+          page.
+        </p>
+        <a href="/operations" class="callout-ty__link">Security &amp; supply chain →</a>
+      </div>
+    </FadeIn>
+  </div>
+</section>
+
+<style>
+  .institutional__head {
+    margin-bottom: 3rem;
+  }
+  .institutional__title {
+    margin-bottom: 1rem;
+  }
+</style>

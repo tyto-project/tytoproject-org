@@ -1,0 +1,144 @@
+---
+import FadeIn from "@/components/ui/FadeIn.astro";
+import {
+  DISCUSSIONS_URL,
+  LICENSE,
+  ORGANIZATION,
+  REPO_URL,
+  SECURITY_URL,
+} from "@/data/site";
+
+/**
+ * Who builds Tyto, and how to join in.
+ *
+ * Reference client homepages carry both of these as sections rather than burying
+ * them on an about page. Values come from site.ts so this cannot drift from /about,
+ * which states the same facts at length.
+ */
+const CARDS = [
+  {
+    heading: "Who builds it",
+    body: `Tyto is maintained by ${ORGANIZATION.name}. It is open source under ${LICENSE}.`,
+    label: "About the project",
+    href: "/about",
+    external: false,
+  },
+  {
+    heading: "Contribute",
+    body: "Patches are welcome, from a typo upward. Fork the repository, make the change, and open a pull request.",
+    label: "Source on GitHub",
+    href: REPO_URL,
+    external: true,
+  },
+  {
+    heading: "Ask something",
+    body: "Bug reports and feature requests go to issues. Questions, ideas and operator help go to discussions.",
+    label: "Issues and discussions",
+    href: DISCUSSIONS_URL,
+    external: true,
+  },
+] as const;
+---
+
+<section class="section-ty" id="project">
+  <div class="container-ty">
+    <FadeIn>
+      <div class="project__head">
+        <span class="cell-label">Project</span>
+        <h2 class="section-title project__title">Who builds Tyto</h2>
+      </div>
+    </FadeIn>
+
+    <div class="project__grid">
+      {
+        CARDS.map((card, i) => (
+          <FadeIn delay={i * 80}>
+            <div class="project__cell">
+              <h3 class="project__cell-title">{card.heading}</h3>
+              <p class="project__cell-body">{card.body}</p>
+              <a
+                href={card.href}
+                target={card.external ? "_blank" : undefined}
+                rel={card.external ? "noopener noreferrer" : undefined}
+                class="project__link"
+              >
+                {card.label} →
+              </a>
+            </div>
+          </FadeIn>
+        ))
+      }
+    </div>
+
+    <FadeIn delay={240}>
+      <p class="project__footnote">
+        Report a suspected vulnerability through <a
+          href={SECURITY_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="project__link project__link--inline">GitHub's private advisory form</a
+        >, not the public issue tracker, and hold the details until there is a fix to publish.
+      </p>
+    </FadeIn>
+  </div>
+</section>
+
+<style>
+  .project__head {
+    margin-bottom: 2.5rem;
+  }
+  .project__title {
+    margin-bottom: 0.75rem;
+  }
+
+  .project__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+
+  .project__cell {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 1.75rem;
+    border: 1px solid var(--border);
+  }
+
+  .project__cell-title {
+    font-size: var(--text-md);
+    font-weight: var(--weight-bold);
+    color: var(--text);
+    letter-spacing: -0.01em;
+    margin-bottom: 0.5rem;
+  }
+
+  .project__cell-body {
+    font-size: var(--text-base);
+    color: var(--text-muted);
+    line-height: 1.65;
+    margin-bottom: 1rem;
+  }
+
+  /* Pushes the link to the bottom so the cells align regardless of body length. */
+  .project__link {
+    margin-top: auto;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--accent);
+  }
+  .project__link:hover,
+  .project__link:focus-visible {
+    text-decoration: underline;
+  }
+  .project__link--inline {
+    margin-top: 0;
+  }
+
+  .project__footnote {
+    margin-top: 1.5rem;
+    font-size: var(--text-sm);
+    color: var(--text-subtle);
+  }
+</style>

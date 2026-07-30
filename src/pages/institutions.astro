@@ -1,0 +1,274 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import NavHeader from "@/components/sections/NavHeader.astro";
+import FooterSection from "@/components/sections/FooterSection.astro";
+import FadeIn from "@/components/ui/FadeIn.astro";
+import PageHero from "@/components/ui/PageHero.astro";
+import SegmentGrid, { type Segment } from "@/components/ui/SegmentGrid.astro";
+import InstitutionalSection from "@/components/sections/InstitutionalSection.astro";
+
+const DAO_REGULATION_URL = "https://ethereumclassicdao.org/regulation";
+
+// The node requests signatures rather than holding a key, so the custody boundary
+// stays where the institution already put it.
+const EXTERNAL_SIGNER = `tyto --network=eth \\
+  --signer-endpoint=https://signer.internal:9000 \\
+  --signer-tls-truststore=/etc/tyto/signer-truststore.p12 \\
+  --rpc-http-enabled \\
+  --rpc-http-port=8545`;
+
+// Each cell is a property of the network, not of the client. The section below says
+// so explicitly rather than leaving a reader to infer it.
+const EVIDENCE: readonly Segment[] = [
+  {
+    tag: "THE TEST",
+    name: "control",
+    description:
+      "Classification turns on whether any person or entity controls the protocol. That is a question about facts, not about intentions or documentation.",
+  },
+  {
+    tag: "THE ANSWER",
+    name: "hashrate",
+    description:
+      "Proof-of-Work answers it with computational evidence rather than legal assurance. Rewriting history means out-computing the honest network, continuously and in public.",
+    accent: true,
+  },
+  {
+    tag: "THE CONSEQUENCE",
+    name: "finality",
+    description:
+      "The same property is what a custodian needs for settlement finality. One mechanism satisfies a compliance test and an operational requirement at once.",
+  },
+];
+---
+
+<BaseLayout
+  title="Regulated finance"
+  description="Tyto for regulated finance: decentralization as evidence, settlement finality, point-in-time state for audit, and HSM custody with keys off the node."
+>
+  <main>
+    <NavHeader />
+    <div id="main-content">
+      <PageHero
+        eyebrow="Regulated finance"
+        title="What an institution can verify itself"
+        description="Proof-of-Work makes decentralization something you can measure rather than assert, and the same property is what settlement finality rests on. Tyto runs that network on infrastructure you already operate: one JVM runtime, signed releases with a dependency inventory, and signing keys that never reach the node. Nothing in it asks you to take another party's word for the state of the chain."
+        ctas={[
+          { label: "Operations", href: "/operations", primary: true },
+          { label: "Quick Start", href: "/guide" },
+        ]}
+      />
+
+      <section class="section-ty">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="inst__head">
+              <span class="cell-label">One mechanism, two requirements</span>
+              <h2 class="section-title inst__title">Why the consensus mechanism matters</h2>
+              <p class="section-subtitle">
+                Regulatory frameworks distinguish assets that have a controlling issuer from assets
+                that do not. Under Proof-of-Work, that question is answered by measurement rather
+                than by documentation, and the same property is what settlement finality depends on.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <SegmentGrid segments={EVIDENCE} headingLevel={3} />
+          </FadeIn>
+
+          <FadeIn delay={160}>
+            <div class="cell-ty callout-ty inst__attribution">
+              <p class="callout-ty__text">
+                These are properties of Ethereum Classic and of Proof-of-Work consensus, not of any
+                one client. The regulatory position, the frameworks it sits under, and the live
+                regulated stablecoin issued on the network are documented by the Ethereum Classic
+                DAO.
+              </p>
+              <a
+                href={DAO_REGULATION_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="callout-ty__link">The regulatory position, at ethereumclassicdao.org →</a
+              >
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      <InstitutionalSection />
+
+      <section class="section-ty">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="inst__head">
+              <span class="cell-label">Counterparty</span>
+              <h2 class="section-title inst__title">Why the node is yours</h2>
+              <p class="section-subtitle">
+                An institution that reads the chain through someone else's endpoint has added a
+                counterparty to every answer it gets. That endpoint can be unavailable, rate
+                limited, behind the tip, or returning a view shaped by whoever runs it, and none of
+                those failures announce themselves in the response. The reading is only ever as good
+                as the operator's word for it.
+              </p>
+              <p class="section-subtitle">
+                A node you run derives the answer instead of receiving it. It validates every block
+                against the rules rather than accepting a summary, so a balance, a receipt or a log
+                is a conclusion your own infrastructure reached from data it checked. That is the
+                difference between a number you can produce evidence for and a number you were
+                given.
+              </p>
+              <p class="section-subtitle">
+                What that requires in practice is modest: one node kept current, with its RPC
+                endpoint reachable only from inside your own network. What to expose and what to
+                keep internal is covered under <a class="inst__link" href="/operations"
+                  >operations</a
+                >.
+              </p>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty section-ty--elev">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="inst__head">
+              <span class="cell-label">Audit and reporting</span>
+              <h2 class="section-title inst__title">
+                Answering what a balance was, not only what it is
+              </h2>
+              <p class="section-subtitle">
+                Reporting, tax and audit ask questions about the past: what an account held at a
+                period end, what a contract's state was on the date of a transaction, what the chain
+                looked like before a correction. A node keeping only recent state answers for the
+                present and a short window behind it. An archive node keeps every historical state
+                and answers for any block the chain has ever had.
+              </p>
+              <p class="section-subtitle">
+                Tyto runs either way, and the difference is disk rather than complexity: the same
+                binary, one storage setting, and a substantially larger volume. Sizing both is on
+                the{" "}<a class="inst__link" href="/operations">operations page</a>.
+              </p>
+              <p class="section-subtitle">
+                Because the answer is re-derived from the chain rather than read out of a vendor's
+                database, two parties running independent nodes reach the same result from the same
+                block. That is what makes an on-chain reconciliation a check rather than a
+                comparison of two providers' records.
+              </p>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty section-ty--elev">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="inst__head">
+              <span class="cell-label">Custody</span>
+              <h2 class="section-title inst__title">Keys stay outside the node</h2>
+              <p class="section-subtitle">
+                Tyto does not require a signing key on the node. Signing is delegated to an
+                external signer over its own authenticated endpoint, so key material stays in an HSM
+                or a custody system and the node holds only the ability to request a signature. A
+                compromised node is then not a compromised key, which is what allows the node to sit
+                in ordinary infrastructure rather than inside the custody boundary.
+              </p>
+              <p class="section-subtitle">
+                The separation is a property of where each piece runs rather than a setting anyone
+                has to remember. The signer stays inside the custody boundary with the key material;
+                the node stays outside it and reaches the signer over an authenticated channel. An
+                operator holding full access to the node can request signatures within whatever the
+                signer allows, and still cannot take a key anywhere else.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <pre class="code-block"><code>{EXTERNAL_SIGNER}</code></pre>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="inst__head">
+              <span class="cell-label">Continuity</span>
+              <h2 class="section-title inst__title">A node is not a system of record</h2>
+              <p class="section-subtitle">
+                The chain is the record; a node is a derived view of it. That changes what recovery
+                means. A lost node is rebuilt by syncing rather than restored from a backup, and a
+                node brought back from a stale snapshot converges on the same state as one built
+                from genesis. Nothing unique to the machine is lost with the machine.
+              </p>
+              <p class="section-subtitle">
+                It also makes redundancy cheap in the way that matters. Running more than one node
+                is running more than one independent derivation of the same data, not maintaining
+                replicas that have to be kept in agreement with each other. Two nodes that disagree
+                are a signal worth acting on, and the chain settles which of them is right.
+              </p>
+              <p class="section-subtitle">
+                What does not return on its own is whatever the institution supplied: the signer,
+                its key material, and the configuration pointing the node at it. Those are backed up
+                and tested the way the rest of your infrastructure is.
+              </p>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="inst__head">
+              <span class="cell-label">Licensing</span>
+              <h2 class="section-title inst__title">Permissive all the way down</h2>
+              <p class="section-subtitle">
+                Tyto is Apache 2.0, and so is what it is built on. The actor system is Apache
+                Pekko, under Apache Software Foundation governance, which forked from Akka before
+                that project adopted the Business Source License. Nothing in the stack carries a
+                source-available license, a commercial-use restriction, or a future relicensing risk
+                inherited from a vendor.
+              </p>
+              <p class="section-subtitle">
+                That matters at procurement rather than at runtime. An institution reviewing what it
+                is permitted to run, modify and redistribute gets one answer for the whole
+                dependency tree, and the CycloneDX SBOM shipped with each release is the artifact
+                that review reads.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <div class="cell-ty callout-ty">
+              <p class="callout-ty__text">
+                The full dependency manifest, with the update policy for each library, is on the
+                stack page.
+              </p>
+              <a href="/stack" class="callout-ty__link">Every dependency, declared →</a>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+    </div>
+    <FooterSection />
+  </main>
+</BaseLayout>
+
+<style>
+  .inst__head {
+    margin-bottom: 3rem;
+  }
+  .inst__title {
+    margin-bottom: 0.75rem;
+  }
+  .inst__attribution {
+    margin-top: 2.5rem;
+  }
+  .inst__link {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+</style>

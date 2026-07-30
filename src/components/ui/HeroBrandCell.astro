@@ -1,0 +1,80 @@
+---
+import PlatformPills from "@/components/ui/PlatformPills.astro";
+import { RELEASES_URL } from "@/data/site";
+
+/**
+ * Left half of the home hero: mascot, strapline, download CTA, platform pills.
+ * Used by HeroSection only. PageHero renders an equivalent cell of its own under
+ * page-hero__brand* classes; the two share PlatformPills but nothing else.
+ */
+const DOWNLOAD_URL = RELEASES_URL;
+---
+
+<div class="hero-cell-overlay hero-brand">
+  <img
+    src="/tyto-hex-logo.png"
+    alt=""
+    width="320"
+    height="320"
+    aria-hidden="true"
+    class="hero-brand__logo"
+    fetchpriority="high"
+    decoding="async"
+  />
+
+  <p class="hero-brand__strapline">
+    AN <span class="hero-brand__accent">EXECUTION CLIENT</span><br />FOR THE EVM ECOSYSTEM
+  </p>
+
+  <div class="hero-brand__actions">
+    <a href={DOWNLOAD_URL} target="_blank" rel="noopener noreferrer" class="btn-ty btn-ty--primary">
+      Download Tyto
+    </a>
+  </div>
+
+  <PlatformPills />
+</div>
+
+<style>
+  .hero-brand {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 2.5rem;
+    min-height: 520px;
+    text-align: center;
+  }
+
+  .hero-brand__logo {
+    margin-top: 2rem;
+    width: min(320px, 70%);
+    height: auto;
+  }
+
+  .hero-brand__strapline {
+    font-size: clamp(1.375rem, 3vw, 2rem);
+    font-weight: var(--weight-bold);
+    color: var(--text);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    width: 100%;
+    padding-inline: 1.25rem;
+    margin-top: 1.5rem;
+  }
+
+  .hero-brand__accent {
+    color: var(--accent);
+  }
+
+  .hero-brand__actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: auto;
+    padding-top: 2rem;
+    width: 100%;
+  }
+</style>

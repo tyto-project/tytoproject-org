@@ -1,0 +1,234 @@
+---
+import {
+  ATTRIBUTION_ENTITIES,
+  EXTERNAL_LINKS,
+  LICENSE,
+  MAVEN_URL,
+  ROUTES,
+  routesInGroup,
+  SITE_DESCRIPTION,
+} from "@/data/site";
+
+interface FooterLink {
+  label: string;
+  href: string;
+  external?: boolean;
+}
+
+const routeLink = (route: (typeof ROUTES)[number]): FooterLink => ({
+  label: route.label,
+  href: route.path,
+});
+
+interface FooterGroup {
+  heading: string;
+  links: readonly FooterLink[];
+}
+
+// One group per column, four across. The brand block sits above them rather than
+// between them: it previously occupied the middle column of three, which put the
+// logo and blurb in the middle of the link list instead of heading the footer.
+//
+// The footer carries every route, unlike the curated nav, so a route with no nav
+// slot is still reachable from every page.
+const FOOTER_GROUPS: readonly FooterGroup[] = [
+  {
+    heading: "Product",
+    links: [
+      { label: "What is Tyto?", href: "/#what" },
+      ...routesInGroup("product")
+        .filter((route) => route.path !== "/")
+        .map(routeLink),
+    ],
+  },
+  { heading: "Use cases", links: routesInGroup("use").map(routeLink) },
+  { heading: "Operate", links: routesInGroup("operate").map(routeLink) },
+  {
+    heading: "Project",
+    links: [
+      ...routesInGroup("meta").map(routeLink),
+      { ...EXTERNAL_LINKS.download, external: true },
+      { ...EXTERNAL_LINKS.docs, external: true },
+      { ...EXTERNAL_LINKS.github, external: true },
+      { ...EXTERNAL_LINKS.docker, external: true },
+    ],
+  },
+];
+---
+
+<footer class="site-footer">
+  <div class="container-ty">
+    <div class="site-footer__brand">
+      <a href="/" class="site-footer__logo-link">
+        <img
+          src="/tyto-hex-logo.png"
+          alt="Tyto"
+          width="120"
+          height="120"
+          loading="lazy"
+          decoding="async"
+        />
+      </a>
+      <p class="site-footer__blurb">{SITE_DESCRIPTION}</p>
+    </div>
+
+    <div class="site-footer__grid">
+      {
+        FOOTER_GROUPS.map((group) => (
+          <div class="site-footer__group">
+            <p class="site-footer__heading">{group.heading}</p>
+            <ul class="site-footer__list">
+              {group.links.map((link) => (
+                <li>
+                  <a
+                    class="footer-link"
+                    href={link.href}
+                    target={link.external ? "_blank" : undefined}
+                    rel={link.external ? "noopener noreferrer" : undefined}
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="site-footer__legal">
+      <p class="site-footer__legal-start">© 2026–present</p>
+
+      {/* Entities come from site.ts, so the footer cannot drift from the JSON-LD. */}
+      <p class="site-footer__legal-center">
+        {
+          ATTRIBUTION_ENTITIES.map((entity, i) => (
+            <>
+              {i > 0 && <span aria-hidden="true"> · </span>}
+              <a class="footer-link" href={entity.url} target="_blank" rel="noopener noreferrer">
+                {entity.name}
+              </a>
+            </>
+          ))
+        }
+      </p>
+
+      <p class="site-footer__legal-end">
+        {LICENSE}
+        <span aria-hidden="true"> · </span>
+        <a
+          class="footer-link site-footer__package"
+          href={MAVEN_URL}
+          target="_blank"
+          rel="noopener noreferrer">org.tyto</a
+        >
+      </p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--border);
+    background: var(--bg-elev);
+    padding: 3.5rem 0 2rem;
+  }
+
+  /* Brand block heads the footer, spanning the full width the columns below
+     occupy. */
+  .site-footer__brand {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  /* One column per group. Two-up on tablet so the headings do not crush, four-up
+     once there is room for them. */
+  .site-footer__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem 3rem;
+    margin-bottom: 3rem;
+    justify-items: center;
+    text-align: center;
+  }
+  @media (min-width: 640px) {
+    .site-footer__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 960px) {
+    .site-footer__grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .site-footer__heading {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-subtle);
+    margin-bottom: 0.875rem;
+  }
+
+  .site-footer__list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .site-footer__logo-link {
+    display: flex;
+    justify-content: center;
+    text-decoration: none;
+    margin-bottom: 0.875rem;
+  }
+
+  /* Runs the width of the four columns below rather than the 28ch it was capped
+     to when it sat inside the middle column of three. */
+  .site-footer__blurb {
+    font-size: var(--text-sm);
+    color: var(--text-subtle);
+    line-height: 1.65;
+    max-width: 80ch;
+    margin-inline: auto;
+    text-wrap: balance;
+  }
+
+  /* Three columns: copyright, attribution, license and coordinates. The center
+     column is sized to its content and the outer two share the remainder, so the
+     attribution sits at the true center rather than wherever space-between left
+     it. Stacks and centers below the breakpoint. */
+  .site-footer__legal {
+    border-top: 1px solid var(--border);
+    padding-top: 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    text-align: center;
+    font-size: var(--text-xs);
+    color: var(--text-subtle);
+  }
+  @media (min-width: 900px) {
+    .site-footer__legal {
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    .site-footer__legal-start {
+      text-align: left;
+    }
+    .site-footer__legal-end {
+      text-align: right;
+    }
+  }
+
+  .site-footer__package {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    letter-spacing: 0.04em;
+  }
+</style>

@@ -1,0 +1,20 @@
+---
+/**
+ * Wraps content in a scroll-triggered reveal.
+ *
+ * Sets the [data-fade-in] hook only. The transition lives in global.css and the
+ * IntersectionObserver that adds .is-visible lives in BaseLayout, so this renders
+ * nothing of its own.
+ */
+interface Props {
+  /** Stagger, in milliseconds, applied via --fade-delay. */
+  delay?: number;
+  class?: string;
+}
+
+const { delay = 0, class: className } = Astro.props;
+---
+
+<div data-fade-in class={className} style={`--fade-delay: ${delay}ms`}>
+  <slot />
+</div>

@@ -1,0 +1,72 @@
+---
+import DataTable, { type DataTableColumn } from "@/components/ui/DataTable.astro";
+import FadeIn from "@/components/ui/FadeIn.astro";
+
+const COLUMNS: readonly DataTableColumn[] = [
+  { label: "Component", mono: true },
+  { label: "What it is" },
+  { label: "Why it matters" },
+];
+
+const ROWS = [
+  [
+    "Scala 3 LTS · current JDK LTS",
+    "Language and runtime",
+    "A current, maintained foundation, not a frozen one.",
+  ],
+  [
+    "Apache Pekko",
+    "Actor runtime",
+    "Open Apache license; no commercial subscription, no vendor lock.",
+  ],
+  ["RocksDB", "Storage engine", "The same proven embedded store the EVM client world relies on."],
+  [
+    "Cats Effect 3 · fs2",
+    "Concurrency",
+    "Pure-functional effects; correctness extended into the runtime.",
+  ],
+  [
+    "Bouncy Castle · BLS12-381 · KZG",
+    "Cryptography",
+    "The same primitives used across the wider Ethereum ecosystem.",
+  ],
+  [
+    "Netty · Micrometer · Prometheus",
+    "Networking and observability",
+    "The JVM operational toolchain, the part that matters at 3 a.m.",
+  ],
+] as const;
+---
+
+<section class="section-ty" id="stack">
+  <div class="container-ty">
+    <FadeIn>
+      <div class="stack-section__head">
+        <span class="cell-label">Stack</span>
+        <h2 class="section-title stack-section__title">The stack</h2>
+        <p class="section-subtitle">
+          A current stack, on purpose. Scala 3 LTS, current JDK LTS, RocksDB, maintained to the
+          latest stable across the board. Production infrastructure runs on supported foundations,
+          not frozen ones. This is what active engineering looks like in a dependency manifest.
+        </p>
+      </div>
+    </FadeIn>
+
+    <FadeIn delay={80}>
+      <DataTable
+        caption="Runtime dependencies and why each was chosen"
+        columns={COLUMNS}
+        rows={ROWS}
+      />
+    </FadeIn>
+  </div>
+</section>
+
+<style>
+  .stack-section__head {
+    margin-bottom: 2.5rem;
+  }
+  .stack-section__title {
+    margin-bottom: 0.75rem;
+  }
+</style>

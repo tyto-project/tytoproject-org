@@ -1,0 +1,517 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import NavHeader from "@/components/sections/NavHeader.astro";
+import FooterSection from "@/components/sections/FooterSection.astro";
+import FadeIn from "@/components/ui/FadeIn.astro";
+import PageHero from "@/components/ui/PageHero.astro";
+import DataTable, { type DataTableColumn } from "@/components/ui/DataTable.astro";
+import SegmentGrid, { type Segment } from "@/components/ui/SegmentGrid.astro";
+import OperationsSection from "@/components/sections/OperationsSection.astro";
+import { CONTAINER_REF } from "@/data/site";
+
+const COSIGN_URL = "https://docs.sigstore.dev/cosign/signing/overview/";
+const CYCLONEDX_URL = "https://cyclonedx.org/";
+
+// Requirements come from the collection the guide already renders, so sizing guidance
+// cannot drift between the two pages.
+const TIER_COLUMNS: readonly DataTableColumn[] = [
+  { label: "What" },
+  { label: "Requirement" },
+  { label: "What drives it" },
+];
+
+const TIER_ROWS = (await getCollection("hardware"))
+  .sort((a, b) => a.data.order - b.data.order)
+  .map((h) => [h.data.item, h.data.requirement, h.data.note]);
+
+const SERVICE: readonly Segment[] = [
+  {
+    tag: "LINUX",
+    name: "systemd",
+    description:
+      "A unit file keeps the node running across reboots, with journald capturing its output alongside every other service on the host.",
+    accent: true,
+  },
+  {
+    tag: "MACOS",
+    name: "launchd",
+    description:
+      "A launch agent or daemon, depending on whether the node should run for one user or for the machine.",
+  },
+  {
+    tag: "WINDOWS",
+    name: "service",
+    description:
+      "Registered as a Windows Service so it starts without an interactive login, which is what an unattended host needs.",
+  },
+];
+
+// A unit file, a scrape config and an import command. All three are structurally the
+// same across clients; only the binary name and flags are Tyto's.
+const SYSTEMD_UNIT = `[Unit]
+Description=Tyto
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=tyto
+Group=tyto
+ExecStart=/usr/local/bin/tyto \\
+  --network=etc \\
+  --data-path=/var/lib/tyto \\
+  --metrics-enabled \\
+  --metrics-port=9545
+Restart=on-failure
+RestartSec=10
+# The node holds many peer sockets and RocksDB file handles at once
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target`;
+
+const PROM_SCRAPE = `scrape_configs:
+  - job_name: tyto
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["localhost:9545"]`;
+
+const ENDPOINT_COLUMNS: readonly DataTableColumn[] = [
+  { label: "Endpoint", mono: true },
+  { label: "Port", mono: true },
+  { label: "Returns" },
+];
+
+const ENDPOINTS: readonly (readonly string[])[] = [
+  ["/metrics", "9545", "Prometheus exposition format: chain height, peer count, sync state"],
+  ["/health", "8545", "Liveness. Whether the process is up and responding"],
+  ["/readiness", "8545", "Readiness. Whether the node is synced enough to serve"],
+  ["/buildinfo", "8545", "Version, commit hash and build provenance of the running binary"],
+];
+
+// Storage is a selection, not a fixed backend: node keying, pruning and history
+// retention are chosen for the role the node plays on the network it runs.
+const STORE_COLUMNS: readonly DataTableColumn[] = [
+  { label: "Role" },
+  { label: "Keying", mono: true },
+  { label: "Why" },
+];
+
+const STORES: readonly (readonly string[])[] = [
+  [
+    "Archive, deep history for applications",
+    "hash",
+    "Deduplicates identical subtrees, so full history costs less than storing it twice",
+  ],
+  [
+    "Tip server, feeding other nodes",
+    "path",
+    "Locality at the tip, which is what a serving node reads most",
+  ],
+  [
+    "Public RPC relay, pruned",
+    "path",
+    "Bounded disk and cheap online pruning, with no history to keep",
+  ],
+  ["Resource-light node", "path", "Smallest working set, for a machine that is not a server"],
+  ["Validator", "path", "Only needs the tip, and wants predictable disk over time"],
+  ["Mining pool", "path", "Same, with the chain tip held stable under load"],
+];
+
+const ERA1_IMPORT = `# Import frozen history in bulk instead of replaying it from genesis
+tyto import-era1 \\
+  --network=etc \\
+  --data-path=/var/lib/tyto \\
+  --era1-dir=/var/lib/tyto/era1`;
+---
+
+<BaseLayout
+  title="Operating a node"
+  description="Running Tyto in production: configuration, observability, storage by role, archive sizing, bulk history import, supervision, and signed releases."
+>
+  <main>
+    <NavHeader />
+    <div id="main-content">
+      <PageHero
+        eyebrow="Operations"
+        title="Operating a Tyto node"
+        description="What a node needs to be configured, watched, supervised and verified in production. Everything on this page ships in the binary: there is no agent to install alongside it and no plugin to enable before it will report what it is doing. Where a choice exists, it is usually decided by the role the node plays rather than by preference."
+        ctas={[
+          { label: "Quick Start", href: "/guide", primary: true },
+          { label: "Institutions", href: "/institutions" },
+        ]}
+      />
+
+      <OperationsSection />
+
+      <section class="section-ty">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="ops__head">
+              <span class="cell-label">Configuration</span>
+              <h2 class="section-title ops__title">Where a setting comes from</h2>
+              <p class="section-subtitle">
+                Configuration layers in a fixed order. A shipped profile provides the base, a
+                configuration file overrides it, the environment overrides that, and a command-line
+                argument wins over everything. Nothing merges unpredictably: for any given setting
+                there is one answer and one place it came from.
+              </p>
+              <p class="section-subtitle">
+                The profile layer is what makes a network selection a single argument. Naming a
+                network resolves to a set of values that would otherwise have to be supplied by
+                hand, and the layers above exist so a deployment can differ from that base without
+                maintaining a fork of it. Put the stable decisions in a file, the per-host ones in
+                the environment, and keep the command line for the argument that changes between
+                runs.
+              </p>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty section-ty--elev">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="ops__head">
+              <span class="cell-label">Several at once</span>
+              <h2 class="section-title ops__title">More than one network in one process</h2>
+              <p class="section-subtitle">
+                Running two networks in a single process is only safe if nothing is shared by
+                accident, and the thing usually shared by accident is observability. A metrics
+                registry or a log handle held once for the whole process works fine until a second
+                node appears, at which point two nodes report into one set of counters and neither
+                number means anything.
+              </p>
+              <p class="section-subtitle">
+                So the registry belongs to the instance rather than to the process. Each network
+                gets its own metrics, its own health state and its own storage, and each is
+                supervised separately, which is what lets one host run an archive node for one
+                network and a pruned node for another without the two interfering or being mistaken
+                for each other on a dashboard.
+              </p>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="ops__head">
+              <span class="cell-label">Supply chain</span>
+              <h2 class="section-title ops__title">Verifying a release</h2>
+              <p class="section-subtitle">
+                Every release is signed and inventoried, so the artifact running in production can
+                be traced back to the build that produced it. This is the whole of Tyto's
+                supply-chain posture, in one place rather than asserted across several pages.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <ul class="ops__list">
+              <li>
+                <a href={COSIGN_URL} target="_blank" rel="noopener noreferrer" class="ops__link"
+                  >Cosign</a
+                > keyless signatures on every container image published to <code
+                  >{CONTAINER_REF}</code
+                >
+              </li>
+              <li>Build provenance attestation, tying an artifact to the workflow that built it</li>
+              <li>
+                A <a
+                  href={CYCLONEDX_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="ops__link">CycloneDX</a
+                > SBOM on every release artifact, listing every dependency that shipped
+              </li>
+              <li>
+                The running node reports its own version, commit and provenance at <code
+                  >/buildinfo</code
+                >
+              </li>
+            </ul>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty section-ty--elev">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="ops__head">
+              <span class="cell-label">History</span>
+              <h2 class="section-title ops__title">Keeping history instead of pruning it</h2>
+              <p class="section-subtitle">
+                An archive node retains historical state rather than pruning it, which is what a
+                block explorer or an analytics service needs. The cost is disk. ERA1 frozen segments
+                allow that history to be imported in bulk rather than replayed from genesis, and
+                shared between operators instead of every node fetching it independently.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <DataTable
+              caption="Node requirements, and what determines each one"
+              columns={TIER_COLUMNS}
+              rows={TIER_ROWS}
+              minWidth="26rem"
+            />
+          </FadeIn>
+
+          <FadeIn delay={160}>
+            <div class="ops__block">
+              <h3 class="ops__block-title">Importing frozen history</h3>
+              <p class="ops__block-body">
+                ERA1 segments are a fixed, content-addressed format, so a segment fetched from one
+                operator is the same as a segment fetched from any other. Importing them is bounded
+                disk work rather than an open-ended replay against peers.
+              </p>
+              <pre class="code-block"><code>{ERA1_IMPORT}</code></pre>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={240}>
+            <div class="ops__block">
+              <h3 class="ops__block-title">Where the segments come from</h3>
+              <p class="ops__block-body">
+                The format is one decision and the transport is another. Segments can arrive over
+                plain HTTP from an operator publishing them, peer to peer from everyone who already
+                holds them, or as a prepared copy of a data directory taken from a node that is
+                already synced. The peer-to-peer route matters most where few nodes serve state,
+                because it turns every operator who has already imported the history into a source
+                for the next one instead of concentrating the load on whoever is willing to serve
+                it.
+              </p>
+              <p class="ops__block-body">
+                The transport has no bearing on what is trusted. Whichever route the segments take,
+                they are checked against a known anchor before being accepted, so a source cannot
+                become trustworthy by being fast or convenient.
+              </p>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="ops__head">
+              <span class="cell-label">Storage</span>
+              <h2 class="section-title ops__title">Choosing a storage approach</h2>
+              <p class="section-subtitle">
+                Storage is a selection rather than a fixed backend. How trie nodes are keyed,
+                whether state is pruned, and how much history is retained are all chosen for the
+                role the node plays, because an archive node and a pruned RPC relay want opposite
+                things from the same database.
+              </p>
+              <p class="section-subtitle">
+                Keying is the decision with the largest consequences. Hash keying deduplicates
+                identical subtrees, which is what makes deep history affordable. Path keying groups
+                nodes by their position in the trie, which gives locality at the chain tip and makes
+                pruning cheap enough to run online. Neither is better; they are optimized for
+                different reads.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <DataTable
+              caption="Storage approach by operator role"
+              columns={STORE_COLUMNS}
+              rows={STORES}
+              minWidth="46rem"
+            />
+          </FadeIn>
+
+          <FadeIn delay={160}>
+            <p class="ops__after">
+              The approach is a property of the data directory, so a host can run an archive node
+              for one network and a pruned node for another without the two interfering.
+            </p>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty section-ty--elev">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="ops__head">
+              <span class="cell-label">Monitoring</span>
+              <h2 class="section-title ops__title">Metrics and health</h2>
+              <p class="section-subtitle">
+                Metrics are served in Prometheus exposition format on their own port, separate from
+                the JSON-RPC surface, so monitoring can reach them without being granted RPC access.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <DataTable
+              caption="Endpoints exposed by a running node"
+              columns={ENDPOINT_COLUMNS}
+              rows={ENDPOINTS}
+              minWidth="36rem"
+            />
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <div class="ops__block">
+              <h3 class="ops__block-title">Liveness and readiness are different questions</h3>
+              <p class="ops__block-body">
+                Liveness asks whether the process is up and answering. Readiness asks whether it is
+                far enough along to be given work, and for a node that means consensus rather than
+                uptime: a node still syncing is alive and running correctly, and would serve stale
+                answers if a load balancer sent traffic to it. Keeping the two separate is what lets
+                an orchestrator restart a hung node without also removing a healthy one that is
+                merely still catching up.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={160}>
+            <div class="ops__block">
+              <h3 class="ops__block-title">Scraping it</h3>
+              <pre class="code-block"><code>{PROM_SCRAPE}</code></pre>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={240}>
+            <div class="ops__block">
+              <h3 class="ops__block-title">Garbage collection is measured, not assumed</h3>
+              <p class="ops__block-body">
+                The usual objection to running a node on the JVM is collector pauses. Rather than
+                argue about it, Tyto exports GC pause time and the fraction of wall-clock time
+                spent collecting, sampled during state healing and reported alongside the sync
+                metrics. A fraction climbing toward 0.2 means the sync is GC-bound, and that it is
+                worth changing the heap before changing the disk.
+              </p>
+              <p class="ops__block-body">
+                That turns a runtime property into an operational reading. The alternative is
+                discovering it from a slow sync and guessing at the cause.
+              </p>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section class="section-ty">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="ops__head">
+              <span class="cell-label">Supervision</span>
+              <h2 class="section-title ops__title">Running as a service</h2>
+              <p class="section-subtitle">
+                A node that only runs while a terminal is open is not deployed. Each platform has
+                its own supervisor, and Tyto is an ordinary long-running process to all of them.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <SegmentGrid segments={SERVICE} headingLevel={3} />
+          </FadeIn>
+
+          <FadeIn delay={160}>
+            <div class="ops__block">
+              <h3 class="ops__block-title">A systemd unit</h3>
+              <p class="ops__block-body">
+                Run the node as its own unprivileged user with its data directory outside the home
+                tree. The file-descriptor limit matters: a node holds many peer sockets and RocksDB
+                file handles open at once, and the default limit is low enough to bite under load.
+              </p>
+              <pre class="code-block"><code>{SYSTEMD_UNIT}</code></pre>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={160}>
+            <div class="ops__block">
+              <h3 class="ops__block-title">Stopping, and being stopped</h3>
+              <p class="ops__block-body">
+                A supervisor that can restart a node will eventually restart one in the middle of a
+                write. Shutdown is therefore ordered rather than abrupt where it can be: work in
+                flight is allowed to finish and the database is closed properly, so an ordinary
+                restart leaves nothing to repair.
+              </p>
+              <p class="ops__block-body">
+                When that is not possible, because the process was killed outright or the machine
+                lost power, the node detects on the next start that its last shutdown was unclean
+                and acts on it rather than assuming its data directory is intact. The failure mode
+                worth avoiding is not a crash; it is a node that comes back up believing a
+                half-written state is complete.
+              </p>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+    </div>
+    <FooterSection />
+  </main>
+</BaseLayout>
+
+<style>
+  .ops__head {
+    margin-bottom: 3rem;
+  }
+  .ops__title {
+    margin-bottom: 0.75rem;
+  }
+
+  .ops__block {
+    margin-top: 2rem;
+  }
+  .ops__block-title {
+    font-size: var(--text-md);
+    font-weight: var(--weight-bold);
+    color: var(--text);
+    letter-spacing: -0.01em;
+    margin-bottom: 0.5rem;
+  }
+  .ops__block-body {
+    font-size: var(--text-base);
+    color: var(--text-muted);
+    line-height: 1.65;
+    margin-bottom: 1.25rem;
+  }
+
+  .ops__after {
+    margin-top: 1.5rem;
+    font-size: var(--text-base);
+    color: var(--text-subtle);
+    line-height: 1.65;
+  }
+
+  .ops__list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .ops__list li {
+    position: relative;
+    padding-left: 1.5rem;
+    font-size: var(--text-md);
+    color: var(--text-muted);
+    line-height: var(--leading-relaxed);
+  }
+  /* Generated content is not announced, so the list stays a list without an
+     aria-hidden span per item. */
+  .ops__list li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-weight: var(--weight-bold);
+  }
+
+  .ops__link {
+    color: var(--accent);
+    font-weight: var(--weight-semibold);
+  }
+  .ops__link:hover,
+  .ops__link:focus-visible {
+    text-decoration: underline;
+  }
+</style>

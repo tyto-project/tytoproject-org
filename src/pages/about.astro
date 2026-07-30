@@ -1,0 +1,301 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import NavHeader from "@/components/sections/NavHeader.astro";
+import FooterSection from "@/components/sections/FooterSection.astro";
+import FadeIn from "@/components/ui/FadeIn.astro";
+import PageHero from "@/components/ui/PageHero.astro";
+import {
+  DISCUSSIONS_URL,
+  ISSUES_URL,
+  LICENSE,
+  ORG_URL,
+  ORGANIZATION,
+  REPO_URL,
+  SECURITY_URL,
+} from "@/data/site";
+
+// A cell carries an optional link, which only Security uses. Typed explicitly
+// rather than inferred: an array literal whose members have different shapes
+// infers a union, and reading `.link` off it is a type error on the members
+// that lack one.
+type Cell = {
+  heading: string;
+  body: string;
+  link?: { label: string; href: string };
+};
+
+// Maintainership, license and contribution details are read from site.ts, which is
+// also what the JSON-LD and llms.txt assert. Before this page they were asserted in
+// the structured data only, where no reader ever saw them.
+const MAINTAINERS: Cell[] = [
+  {
+    heading: "Maintainers",
+    body: `Tyto is maintained by ${ORGANIZATION.name}. The authors maintain the repository, review what lands in it, and publish the releases.`,
+  },
+  {
+    heading: "Standards",
+    // Deliberately scoped: a contribution to the specification, stated at project
+    // level. It is not a conformance claim and must never be written as one.
+    body: "Tyto's authors include a credited contributor to the EEA Enterprise Ethereum Client Specification, the document that sets out implementation requirements for Enterprise Ethereum clients. It covers the permissioning, privacy and operational interfaces a private deployment expects on top of the base protocol.",
+  },
+  {
+    heading: "Governance",
+    body: "Development happens in the open on GitHub: changes arrive as pull requests, are reviewed there, and ship in signed releases. There is no separate foundation or steering body between the maintainers and the code. Design discussion that predates a pull request happens in issues and in discussions, in public.",
+  },
+  {
+    heading: "Releases",
+    body: "Releases are tagged in the repository and published as container images alongside the JVM artifacts. Each one carries a build signature and a software bill of materials, so a running binary can be traced back to the commit and the build that produced it.",
+  },
+  {
+    heading: "License",
+    body: `${LICENSE}. The copyright holders are named in the NOTICE file alongside the license in the repository. The license permits commercial use, modification and redistribution, and carries an express patent grant from the contributors.`,
+  },
+  {
+    heading: "Security",
+    // SECURITY.md asks for private disclosure. Never point this at ISSUES_URL:
+    // filing a vulnerability on the public tracker is the disclosure it prevents.
+    body: "Report a suspected vulnerability through GitHub's private advisory form rather than the public issue tracker, and hold the details until the maintainers have investigated and there is a fix to publish.",
+    link: { label: "Report a vulnerability", href: SECURITY_URL },
+  },
+];
+
+const REPOSITORIES = [
+  {
+    label: "tyto-cli",
+    href: REPO_URL,
+    body: "The client itself: the node, its build, and the workflow that publishes each release.",
+  },
+  {
+    label: "tyto-tests",
+    href: `${ORG_URL}/tyto-tests`,
+    body: "Test fixtures and execution vectors, organized by network, plus the client configurations and simulators used to run the shared Ethereum test suites. The upstream suites are tracked as pinned submodules rather than copied in.",
+  },
+  {
+    label: "tyto-gui",
+    href: `${ORG_URL}/tyto-gui`,
+    body: "The graphical interface for running and watching a node, for operators who would rather not work through a terminal.",
+  },
+];
+
+const CONTRIBUTING = [
+  { label: "Source", href: REPO_URL, body: "The client, its build, and its release workflow." },
+  { label: "Issues", href: ISSUES_URL, body: "Bug reports and feature requests." },
+  { label: "Discussions", href: DISCUSSIONS_URL, body: "Questions, ideas, and operator help." },
+];
+---
+
+<BaseLayout
+  title="About"
+  description="Who maintains Tyto, how changes land and releases are published, how to report a vulnerability, and where the name comes from."
+>
+  <main>
+    <NavHeader />
+    <div id="main-content">
+      <PageHero
+        eyebrow="About"
+        title="Who builds Tyto"
+        description="Tyto is a Scala execution client for the EVM ecosystem, open source under Apache 2.0 and developed in public. It is maintained by its authors rather than by a foundation, so nothing sits between a proposed change and the people accountable for it. Its authors work on the specifications the client implements, not only on the client."
+        ctas={[
+          { label: "Source", href: REPO_URL, external: true, primary: true },
+          { label: "Architecture", href: "/architecture" },
+        ]}
+      />
+
+      <section class="section-ty">
+        <div class="container-ty">
+          <FadeIn>
+            <div class="cell-ty about-origin">
+              <h2 class="about-cell__heading">The name</h2>
+              <p class="about-origin__lead">
+                <em>Tyto alba</em> is the barn owl. Its wing feathers carry a comb-like leading edge
+                and a soft trailing fringe that break up the turbulence a wingbeat would
+                otherwise make, so it flies close to silently. Its ear openings sit at
+                different heights on its skull, which lets it place prey it has never seen.
+              </p>
+              <p class="about-origin__note">The name is the method.</p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={80}>
+            <div class="about-grid">
+              {
+                MAINTAINERS.map((item) => (
+                  <div class="cell-ty about-cell">
+                    <h2 class="about-cell__heading">{item.heading}</h2>
+                    <p class="about-cell__body">{item.body}</p>
+                    {item.link && (
+                      <a
+                        href={item.link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="about-links__link about-cell__link"
+                      >
+                        {item.link.label} →
+                      </a>
+                    )}
+                  </div>
+                ))
+              }
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={120}>
+            <div class="about-block">
+              <h2 class="section-title about-block__title">Repositories</h2>
+              <p class="section-subtitle about-block__lead">
+                The client is one repository of several. The others hold what is tested against it
+                and what is built on top of it, kept separate so each can move at its own pace.
+              </p>
+              <ul class="about-links">
+                {
+                  REPOSITORIES.map((repo) => (
+                    <li class="cell-ty about-links__item">
+                      <a
+                        href={repo.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="about-links__link"
+                      >
+                        {repo.label} →
+                      </a>
+                      <p class="about-cell__body">{repo.body}</p>
+                    </li>
+                  ))
+                }
+              </ul>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={160}>
+            <div class="about-block">
+              <h2 class="section-title about-block__title">Contributing</h2>
+              <p class="section-subtitle about-block__lead">
+                Tyto is open source and takes outside contributions. Fork the repository, make the
+                change, and open a pull request against the default branch. Small fixes are as
+                welcome as large ones, and a typo in the documentation is worth a pull request.
+              </p>
+              <p class="section-subtitle about-block__lead">
+                Changes that alter consensus behavior, the wire protocol, or the supply-chain
+                workflow get more review than changes that do not, so raising an issue before
+                starting on one will save time. The same is true of a change that adds a dependency,
+                which is reviewed on its own terms rather than as part of whatever needed it.
+              </p>
+              <p class="section-subtitle about-block__lead">
+                Building the client from source needs a JDK and nothing else; the build fetches what
+                it depends on. If you are looking for somewhere to start, the test corpus takes
+                fixtures for cases it does not cover, and those are self-contained.
+              </p>
+              <ul class="about-links">
+                {
+                  CONTRIBUTING.map((link) => (
+                    <li class="cell-ty about-links__item">
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="about-links__link"
+                      >
+                        {link.label} →
+                      </a>
+                      <p class="about-cell__body">{link.body}</p>
+                    </li>
+                  ))
+                }
+              </ul>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+    </div>
+    <FooterSection />
+  </main>
+</BaseLayout>
+
+<style>
+  .about-origin {
+    padding: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .about-origin__lead {
+    font-size: var(--text-lg);
+    color: var(--text-muted);
+    line-height: 1.7;
+    max-width: 60ch;
+  }
+
+  .about-origin__note {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--text-subtle);
+    margin-top: 1rem;
+  }
+
+  .about-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+
+  /* Six cells against auto-fit resolve to four columns at desktop widths, which
+     leaves an orphan row of two. Pinning three columns gives two full rows. */
+  @media (min-width: 920px) {
+    .about-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .about-cell {
+    padding: 1.75rem;
+  }
+
+  .about-cell__link {
+    margin-top: 1rem;
+  }
+
+  .about-cell__heading {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-subtle);
+    margin-bottom: 0.75rem;
+  }
+
+  .about-cell__body {
+    font-size: var(--text-base);
+    color: var(--text-muted);
+    line-height: 1.65;
+  }
+
+  .about-block__title {
+    margin-bottom: 0.75rem;
+  }
+
+  .about-block__lead {
+    margin-bottom: 1.5rem;
+  }
+
+  .about-links {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+
+  .about-links__item {
+    padding: 1.5rem;
+  }
+
+  .about-links__link {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+</style>

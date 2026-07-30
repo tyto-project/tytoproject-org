@@ -1,0 +1,180 @@
+---
+import HexCanvas from "@/components/ui/HexCanvas.astro";
+import PlatformPills from "@/components/ui/PlatformPills.astro";
+import { CONTAINER_REF, RELEASES_URL } from "@/data/site";
+import TechStackBadges from "@/components/ui/TechStackBadges.astro";
+
+interface Cta {
+  label: string;
+  href: string;
+  external?: boolean;
+  primary?: boolean;
+}
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  description: string;
+  ctas?: Cta[];
+}
+
+const { eyebrow, title, description, ctas = [] } = Astro.props;
+
+const DOWNLOAD_URL = RELEASES_URL;
+---
+
+<section class="page-hero">
+  <HexCanvas />
+  <div class="container-ty page-hero__inner">
+    <div class="cell-grid-2col page-hero__grid">
+      <div class="hero-cell-overlay page-hero__brand">
+        <img
+          src="/tyto-hex-logo.png"
+          alt=""
+          width="320"
+          height="320"
+          aria-hidden="true"
+          class="page-hero__logo"
+          fetchpriority="high"
+          decoding="async"
+        />
+
+        <p class="page-hero__strapline">
+          AN <span class="page-hero__strapline-accent">EXECUTION CLIENT</span><br />FOR THE EVM
+          ECOSYSTEM
+        </p>
+
+        <div class="page-hero__brand-actions">
+          <a
+            href={DOWNLOAD_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-ty btn-ty--primary"
+          >
+            Download Tyto
+          </a>
+        </div>
+
+        <PlatformPills />
+      </div>
+
+      <div class="hero-cell-overlay page-hero__body">
+        <span class="cell-label">{eyebrow}</span>
+        <h1 class="section-title page-hero__title">{title}</h1>
+        <p class="section-subtitle page-hero__description">{description}</p>
+        {
+          /* Sits between the description and the CTAs, so a reader meets the command
+            that runs the client before the buttons rather than after scrolling past
+            them. Rendered as slot fallback, so every PageHero page gets it from one
+            definition and a page that needs something else passes its own children
+            instead of this being pasted into thirteen files. */
+        }
+        <slot>
+          <pre class="code-block"><code>docker run {CONTAINER_REF}</code></pre>
+        </slot>
+        {
+          ctas.length > 0 && (
+            <div class="page-hero__ctas">
+              {ctas.map((cta) => (
+                <a
+                  href={cta.href}
+                  target={cta.external ? "_blank" : undefined}
+                  rel={cta.external ? "noopener noreferrer" : undefined}
+                  class:list={["btn-ty", cta.primary && "btn-ty--primary"]}
+                >
+                  {cta.label}
+                </a>
+              ))}
+            </div>
+          )
+        }
+        <TechStackBadges />
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .page-hero {
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Lifts content above the absolutely-positioned HexCanvas. */
+  .page-hero__inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  .page-hero__grid {
+    border: 1px solid var(--border);
+  }
+
+  .page-hero__brand {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 2.5rem;
+    min-height: 520px;
+    text-align: center;
+  }
+
+  .page-hero__logo {
+    margin-top: 2rem;
+    width: min(320px, 70%);
+    height: auto;
+  }
+
+  .page-hero__strapline {
+    font-size: clamp(1.375rem, 3vw, 2rem);
+    font-weight: var(--weight-bold);
+    color: var(--text);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    width: 100%;
+    padding-inline: 1.25rem;
+    margin-top: 1.5rem;
+  }
+  .page-hero__strapline-accent {
+    color: var(--accent);
+  }
+
+  .page-hero__brand-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: auto;
+    padding-top: 2rem;
+    width: 100%;
+  }
+
+  .page-hero__body {
+    padding: clamp(2.5rem, 4vw, 3.5rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 1rem;
+  }
+
+  .page-hero__title {
+    margin-bottom: 0;
+  }
+
+  .page-hero__description {
+    margin: 0;
+    max-width: 52ch;
+  }
+
+  .page-hero__ctas {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: auto;
+    padding-top: 2rem;
+    justify-content: center;
+  }
+</style>
