@@ -1,0 +1,33 @@
+{
+  "id": "/",
+  "name": "Tyto",
+  "short_name": "Tyto",
+  "description": "Tyto is a Scala execution client for the EVM ecosystem: native to Ethereum Classic, a full node on Ethereum, several networks from one JVM binary.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#1a1f16",
+  "theme_color": "#50a060",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "lang": "en",
+  "dir": "ltr"
+}
