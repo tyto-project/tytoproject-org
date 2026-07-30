@@ -1,0 +1,13 @@
+# Vendored from tyto-brand. Reformatting these would create a permanent diff
+# against upstream and make the re-copy step in src/styles/global.css report
+# spurious changes every time. Brand generates its token CSS from DTCG JSON.
+src/styles/tyto/
+
+# Generated or machine-owned
+pnpm-lock.yaml
+dist/
+.astro/
+node_modules/
+
+# Local working files, never committed
+.local/

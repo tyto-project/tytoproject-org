@@ -1,0 +1,13 @@
+# pnpm settings for this project.
+#
+# These live here rather than in .npmrc because a project .npmrc is gitignored in
+# this repo, so a setting placed there would apply locally and be absent in CI.
+
+# Prevents pnpm installing OPTIONAL peer dependencies. eslint-plugin-astro declares
+# eslint-plugin-jsx-a11y as an optional peer; installing it pulls in an advisory
+# (GHSA-mh99-v99m-4gvg) that has no fix on the affected release line.
+#
+# Trade-off: the plugin's opt-in jsx-a11y rules are unavailable, so accessibility is
+# reviewed by hand rather than linted. Re-enabling requires that advisory to be
+# resolved upstream first.
+autoInstallPeers: false
