@@ -1,0 +1,31 @@
+version: 2
+updates:
+  # This repo uses pnpm. Dependabot has no pnpm ecosystem key: pnpm resolves under
+  # "npm". The manifest and lockfile are at the repository root, not in a subdirectory.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+      semver-major-days: 21
+
+  # Both workflows under .github/workflows pin every action to a commit SHA with the
+  # tag in a trailing comment, which Dependabot updates in place. So the actions
+  # themselves are a dependency surface and need the same cooldown.
+  #
+  # directory MUST be "/" here, not "/.github/workflows". GitHub: "For GitHub Actions,
+  # use the value /. Dependabot will search the /.github/workflows directory, as well
+  # as the action.yml/action.yaml file from the root directory."
+  #
+  # No semver-major-days: GitHub's cooldown support table lists GitHub Actions as
+  # "Default days supported / SemVer-bump days NOT supported". Its absence here is
+  # deliberate, not an oversight. Do not copy it down from the npm block above.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+# Cooldown delays convenience updates only. Security updates from the GitHub Advisory
+# Database bypass it, so a CVE fix is not held back by anything above.
