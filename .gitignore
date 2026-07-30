@@ -1,0 +1,115 @@
+# dependencies
+/node_modules
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# package-manager config
+# A project .npmrc is where `//registry.npmjs.org/:_authToken=` lives, and this
+# repository is public. Ignored with NO carve-out: if a policy-only .npmrc is ever
+# wanted here, that is a deliberate decision to take at the time, not a hole to leave
+# open now. Machine-wide pnpm policy (the release-age gate) lives in pnpm's global
+# config and does not need a file in this repo.
+.npmrc
+
+# astro
+.astro/
+
+# production
+dist/
+
+# misc
+.DS_Store
+Thumbs.db
+*.pem
+*.key
+*.p12
+*.pfx
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files
+.env
+.env.*
+!.env.example
+
+# typescript
+*.tsbuildinfo
+
+# secrets & credentials
+credentials.json
+service-account.json
+secrets/
+
+# SSH / signing key material
+id_rsa
+id_ecdsa
+id_ed25519
+
+# wallet / node key material
+keystore/
+*.keystore
+wallet.json
+mnemonic.txt
+
+# Claude Code working directory (local only)
+#
+# Exception: CLAUDE.md is committed at the repo root and is deliberately NOT ignored
+# here. It is a one-line `@AGENTS.md` import carrying no content of its own, and
+# AGENTS.md is itself committed. Operator decision, matching tyto-brand and
+# tyto-design-system. `.claude/` stays ignored whole: agent working files, session
+# notes and scratch scripts are authored into it, and this repository is public.
+.claude/
+
+# Internal development directory
+.local/
+
+# Local pre-rebuild snapshots (rollback safety net, not repo history)
+/archive/
+
+# Planning & internal docs
+SESSION_NOTES.md
+PLANNING.md
+SCRATCH.md
+*.scratch.*
+*.draft.*
+
+# IDE
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# Logs
+logs/
+tmp/
+temp/
+
+# Agent and editor config that can carry tokens. .mcp.json is Claude Code's
+# project-scoped MCP config and lives at the repo root; CLAUDE.local.md is the
+# local-only memory file alongside the committed CLAUDE.md.
+.mcp.json
+CLAUDE.local.md
+.vscode/mcp.json
+.vscode/launch.json
+
+# direnv exports secrets into the shell; .env* does not match these.
+.envrc
+.direnv/
+
+# Key material beyond the pem/key/p12/pfx already covered above.
+*.p8
+*.der
+*.asc
+*.gpg
+*.jks
+
+# Stray logs and macOS AppleDouble files.
+*.log
+._*
