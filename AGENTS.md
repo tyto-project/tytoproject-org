@@ -186,8 +186,10 @@ This repository is **public**. Everything not ignored is world-readable the mome
 
 - `.gitignore` is the gate. Verify it by effect with `git check-ignore --no-index -q <path>`, never
   by reading the patterns, and never with `-v` as the condition (it exits 0 on a negation match).
-- `.claude/` and `.local/` are ignored and never committed. `CLAUDE.md` **is** committed: it is a
-  one-line `@AGENTS.md` import carrying no content of its own.
+- `.claude/` is **tracked**, so repo-local agents, skills and rules travel with the repo. Only
+  machine-local and agent-written state is held back, named line by line in `.gitignore`. `.local/`
+  is ignored and never committed. `CLAUDE.md` **is** committed: it is a one-line `@AGENTS.md` import
+  carrying no content of its own.
 - A project `.npmrc` is ignored, because that is where a registry auth token lives.
 - Never commit an `.env`, a key, or a credential file of any kind.
 

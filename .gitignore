@@ -49,14 +49,18 @@ keystore/
 wallet.json
 mnemonic.txt
 
-# Claude Code working directory (local only)
-#
-# Exception: CLAUDE.md is committed at the repo root and is deliberately NOT ignored
-# here. It is a one-line `@AGENTS.md` import carrying no content of its own, and
-# AGENTS.md is itself committed. Operator decision, matching tyto-brand and
-# tyto-design-system. `.claude/` stays ignored whole: agent working files, session
-# notes and scratch scripts are authored into it, and this repository is public.
-.claude/
+# Claude Code
+# This directory is TRACKED so repo-local agents, skills and rules travel with the
+# repo. Only machine-local and agent-written state is held back. Do not invert this
+# into a blanket ignore: an agent inside an ignored directory never reaches a clone.
+.claude/settings.local.json
+.claude/worktrees/
+.claude/agent-memory-local/
+.claude/launch.json
+.claude/scheduled_tasks.json
+CLAUDE.local.md
+.claude/**/*.local.*
+.claude/**/*-local/
 
 # Internal development directory
 .local/

@@ -170,8 +170,10 @@ This repository is public. Everything not ignored is world-readable once pushed.
 
 - `.gitignore` is the gate. Verify by effect with `git check-ignore --no-index -q <path>`, never by
   reading the patterns, and never with `-v` as the condition: it exits 0 on a negation match too.
-- `.claude/` and `.local/` are ignored and never committed. `CLAUDE.md` **is** committed: it is a
-  one-line `@AGENTS.md` import carrying no content of its own. Do not add it to `.gitignore`.
+- `.claude/` is **tracked**, so repo-local agents, skills and rules travel with the repo. Only
+  machine-local and agent-written state is held back, named line by line in `.gitignore`. `.local/`
+  is ignored and never committed. `CLAUDE.md` **is** committed: it is a one-line `@AGENTS.md` import
+  carrying no content of its own. Do not add it to `.gitignore`.
 - A project `.npmrc` is ignored, because that is where a registry auth token lives.
 - Never commit an `.env`, a key, or a credential file of any kind.
 - Report a suspected vulnerability through this repository's private advisory form, not the public
@@ -203,6 +205,8 @@ Do not modify these without an explicit instruction.
   for **this site** (Docker, Vercel, Terraform). It is static-only and deploys as static files.
   Docker instructions for running the Tyto client are site copy and are expected.
 - Redeclare a design token locally to work around the design system.
-- Commit an `.env`, a key, a credential file, or anything under `.claude/` or `.local/`. This
-  repository is public: everything not ignored is world-readable the moment it is pushed.
+- Commit an `.env`, a key, a credential file, or anything under `.local/`. This repository is
+  public: everything not ignored is world-readable the moment it is pushed. Note that `.claude/`
+  is deliberately **not** on this list — it is tracked, and committing repo-local agents, skills
+  and rules there is correct.
 - Stage with `git add .` or `git add -A`. Stage specific files.
