@@ -245,8 +245,8 @@ const MECHANISM: readonly ProofCard[] = [
               <span class="cell-label">The module graph</span>
               <h2 class="section-title arch__title">How the layering is enforced</h2>
               <p class="section-subtitle">
-                Tyto is built as sixteen modules, and each one declares exactly which others it is
-                allowed to use. A module can only use modules below it in this table.
+                Tyto is built as a set of modules, and each one declares exactly which others it
+                is allowed to use. A module can only use modules below it in this table.
               </p>
               <p class="section-subtitle">
                 Code that reaches upward does not compile. If something in the EVM tried to call
