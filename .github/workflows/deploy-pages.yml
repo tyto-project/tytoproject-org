@@ -6,9 +6,9 @@ on:
       - main
   workflow_dispatch:
 
-# Scoped per job rather than workflow-wide: the build job runs third-party
-# install scripts and needs only read access, while pages/id-token belong to
-# the deploy job alone.
+# A read-only floor here, with write grants added per job. The build job runs
+# third-party install scripts and gets nothing beyond contents: read; pages and
+# id-token belong to the deploy job alone.
 permissions:
   contents: read
 
@@ -23,8 +23,6 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
-      # configure-pages runs in this job and reads or creates the Pages site.
-      pages: write
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -54,10 +52,6 @@ jobs:
 
       - name: Setup Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
-        with:
-          # Creates the Pages site when it does not exist yet, so the first deploy
-          # does not require someone to switch Pages on in repository settings.
-          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5

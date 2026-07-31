@@ -1,10 +1,5 @@
 # dependencies
 /node_modules
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
 
 # package-manager config
 # A project .npmrc is where `//registry.npmjs.org/:_authToken=` lives, and this
@@ -29,11 +24,7 @@ Thumbs.db
 *.pfx
 
 # debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
+.p
 # env files
 .env
 .env.*
@@ -71,12 +62,8 @@ mnemonic.txt
 .local/
 
 # Local pre-rebuild snapshots (rollback safety net, not repo history)
-/archive/
 
 # Planning & internal docs
-SESSION_NOTES.md
-PLANNING.md
-SCRATCH.md
 *.scratch.*
 *.draft.*
 
@@ -96,6 +83,7 @@ temp/
 # local-only memory file alongside the committed CLAUDE.md.
 .mcp.json
 CLAUDE.local.md
+.aws/
 .vscode/mcp.json
 .vscode/launch.json
 
