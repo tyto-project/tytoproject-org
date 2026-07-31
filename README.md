@@ -68,12 +68,12 @@ public/         Served at the domain root: favicons, OG image, CNAME,
 
 GitHub Pages, on the custom domain set by `public/CNAME`.
 
-- **`deploy-pages.yml`** runs on push to `main` and on manual dispatch. It lints, format-checks and builds before it
-  publishes, so a lint or type failure fails the deploy rather than shipping a broken site.
+- **`deploy-pages.yml`** runs on push to `main` and on manual dispatch. It lints, format-checks and
+  builds before publishing, so a failure fails the deploy rather than shipping a broken site.
 - **`ci.yml`** runs on pull requests into `main`: lint, format check and build.
 
-Because publishing happens on merge, treat `main` as a release branch. Put changes on a topic
-branch and open a pull request.
+Publishing happens on push to `main`. Note that `ci.yml` runs only on pull requests, so a direct
+push is gated solely by the deploy workflow's own lint, format-check and build steps.
 
 ## Brand assets
 

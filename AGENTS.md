@@ -19,7 +19,7 @@ This version has breaking changes: APIs, conventions, and file structure may all
   in one `writeFileSync` rather than patching between the markers. So the markers
   are not a merge protocol that anything honors: if the scaffolder is ever re-run
   in this directory, everything here goes, markers included. Copy this file out
-  first. The scaffolder no longer emits these markers.
+  first. The scaffolder does not emit these markers.
 -->
 
 # tytoproject-org
@@ -35,8 +35,9 @@ assets in `public/` are likewise copies.
 
 ## Stack
 
-Read from `package.json`, `pnpm-lock.yaml`, `astro.config.mjs`, `tsconfig.json` and
-`eslint.config.mjs`. Major series only, because patch numbers here go stale within days.
+Read from `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `astro.config.mjs`,
+`tsconfig.json` and `eslint.config.mjs`. Major series only, because patch numbers here go stale
+within days.
 
 | Layer           | What                                                                            | Where it is declared                       |
 | --------------- | ------------------------------------------------------------------------------- | ------------------------------------------ |
@@ -47,6 +48,7 @@ Read from `package.json`, `pnpm-lock.yaml`, `astro.config.mjs`, `tsconfig.json` 
 | Language        | TypeScript 6, `extends: astro/tsconfigs/strict`, path alias `@/*` to `src/*`    | `tsconfig.json`                            |
 | Type check      | `@astrojs/check`, which is what `astro check` runs                              | `package.json` devDependencies             |
 | Lint            | ESLint 10 flat config, `eslint-plugin-astro` plus `@typescript-eslint`          | `eslint.config.mjs`                        |
+| pnpm settings   | `autoInstallPeers: false`, which is a security decision, not a preference       | `pnpm-workspace.yaml`                      |
 | Fonts           | `@fontsource/dm-sans` and `@fontsource/jetbrains-mono`, self-hosted             | imported in `src/layouts/BaseLayout.astro` |
 | Package manager | pnpm, lockfile `lockfileVersion: '9.0'`; both workflows pin pnpm 10 and Node 24 | `.github/workflows/*.yml`                  |
 
@@ -54,7 +56,7 @@ Read from `package.json`, `pnpm-lock.yaml`, `astro.config.mjs`, `tsconfig.json` 
 in the manifest, and none should be added.
 
 `package.json` has **no `packageManager` field**. Do not add one without asking; the pnpm major is
-currently fixed by the workflows, not by the manifest.
+fixed by the workflows, not by the manifest.
 
 ## Commands
 
@@ -72,14 +74,16 @@ pnpm format:check                # prettier --check ., which is what CI runs
 ```
 
 **There is no `test` script, and no test framework is installed.** Do not invent a call to one, and
-do not report "tests pass". `pnpm lint && pnpm format:check && pnpm typecheck` is the whole gate available locally, and it is
+do not report "tests pass". `pnpm lint && pnpm format:check && pnpm typecheck` is the whole gate
+available locally, and it is
 exactly what CI runs. `pnpm build` runs `astro check` before it builds, so a type error fails the
 build.
 
 ## Structure
 
 The directory listing is authoritative. What follows says what each directory is **for**, not what
-it currently holds, so that it stays true as pages are added.
+it holds at any given
+moment, so that it stays true as pages are added.
 
 ```
 src/
@@ -97,7 +101,7 @@ src/
   content/             JSON collections, with their schemas in
                        src/content.config.ts
   styles/global.css    imports styles/tyto/, plus the few site-only rules
-  styles/tyto/       vendored from tyto-brand -- do not hand-edit
+  styles/tyto/       vendored from tyto-brand, do not hand-edit
 public/                served at the domain root: favicons, OG image, CNAME,
                        robots.txt, logos
 ```
@@ -116,7 +120,8 @@ unreachable from every one of them.
 
 Match what is there. These are descriptions of the existing code, not aspirations.
 
-- **Styling is the vendored brand classes plus a scoped `<style>` block per component.** There are zero
+- **Styling is the vendored brand classes plus a scoped `<style>` block per component.** There are
+  zero
   inline `style` attributes and no CSS framework; reach for a token, not a literal value.
 
   ```astro
@@ -146,10 +151,10 @@ Match what is there. These are descriptions of the existing code, not aspiration
 - **Plain `<img>` for images.** `astro:assets` and `<Image />` are not used anywhere in `src/`.
 - **No live or dynamic data fetching.** The site is fully static; there is no ISR, no client-side
   polling and no runtime API call.
-- **No em dashes anywhere in this repo.** Use commas, colons, semicolons or periods. This holds for
-  site copy, comments, `README.md` and the generated `/llms.txt` alike. The exception that used to
-  be recorded here for `README.md` and `public/llms.txt` is gone: the README no longer contains any,
-  and `public/llms.txt` no longer exists because the file is generated.
+- **No em dashes anywhere in this repo**, with one exception: `LICENSE` and `NOTICE` are legal
+  text and are never edited for style. Use commas, colons, semicolons or periods. En dashes in
+  the copyright year ranges are correct and stay. This holds for
+  site copy, comments, `README.md` and the generated `/llms.txt` alike.
 
 ## Deployment
 
@@ -163,15 +168,15 @@ GitHub Pages, custom domain **tytoproject.org**, set by `public/CNAME`. `astro.c
 
 ## Branching
 
-**Inferred from this repo's own configuration and not yet confirmed by the maintainer.** Unlike the
-sibling `tyto-project` repos, this one publishes on merge: a commit pushed straight to `main`
-reaches the live site without ever having passed the PR check, because CI runs only on
-`pull_request`.
+Work lands **directly on `main`**, matching the sibling `tyto-project` repos. Use a topic branch
+(`feat/`, `fix/` or `refactor/` plus a kebab-case description) when a change wants isolation or
+review, but a fast-forward onto `main` is the normal path and no PR is required.
 
-On that reading `main` is a release branch. Put changes on a topic branch, `feat/`, `fix/` or
-`refactor/` plus a kebab-case description, and open a PR. If the maintainer prefers the
-direct-to-`main` posture the sibling repos record, replace this section outright rather than
-working around it.
+**Know what that costs.** `ci.yml` runs only on `pull_request`, so a commit pushed straight to
+`main` never passes it. What does gate a direct push is `deploy-pages.yml`, which runs lint,
+format-check and build before publishing, so a failure fails the deploy rather than shipping a
+broken site. That is the whole of the check on this path: there is no test suite, and nothing
+reviews the copy.
 
 **Pushing is a separate decision from committing. Never push unasked**, on any branch.
 
@@ -191,16 +196,21 @@ This repository is **public**. Everything not ignored is world-readable the mome
 **Always**
 
 - Run `pnpm lint && pnpm format:check && pnpm typecheck` before reporting a task complete. CI runs
-  `format:check`, and the deploy workflow does too, so skipping it fails a deploy rather than a check. There is no test suite to run.
+  `format:check`, and the deploy workflow does too, so skipping it fails a deploy rather than a
+  check. There is no test suite to run.
 - Stage specific files. Never `git add .` or `git add -A`.
 
 **Ask first**
 
+- Installing `eslint-plugin-jsx-a11y`. It is an optional peer blocked by an unpatched advisory
+  and is kept out by `autoInstallPeers: false` in `pnpm-workspace.yaml`. Accessibility is
+  reviewed by hand. Do not "fix" its absence.
 - Adding, removing or bumping **any** dependency, including a transitive bump. Dependency changes
   are gated on a release-age and deprecation review and never land as a side effect of other work.
   Do not edit `package.json` or `pnpm-lock.yaml` in passing.
 - Changing anything under `src/styles/tyto/`. It is a copy of `tyto-brand`; edits there are lost
   on the next sync. Change it upstream and re-copy.
+- Changing `src/styles/global.css`, the style entry point.
 - Changing `astro.config.mjs` `site` or `output`, which would break the GitHub Pages deploy.
 - Changing `public/CNAME`, which is the live custom domain.
 - Changing `src/layouts/BaseLayout.astro` metadata, canonical URL, OG tags or JSON-LD. These are

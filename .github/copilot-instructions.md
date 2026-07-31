@@ -24,7 +24,8 @@
 
 ## This is not the Astro you know
 
-This repo is on a recent Astro major. APIs, conventions and file structure may all differ from your
+This repo tracks the current Astro major. APIs, conventions and file structure may all differ from
+your
 training data. Read https://docs.astro.build before writing any code, and heed deprecation notices.
 
 The source for **tytoproject.org**, the public website for Tyto. Tyto itself is a Scala execution
@@ -79,7 +80,8 @@ type error fails the build.
 ## Structure
 
 The directory listing is authoritative. What follows says what each directory is **for**, not what
-it currently holds, so that it stays true as pages are added.
+it holds at any given
+moment, so that it stays true as pages are added.
 
 ```
 src/pages/               One .astro file per route, plus llms.txt.ts which
@@ -95,7 +97,7 @@ src/data/site.ts         ROUTES plus URL and organization constants. The single
 src/content/             JSON collections, with their schemas in
                          src/content.config.ts
 src/styles/global.css    imports styles/tyto/, plus the few site-only rules
-src/styles/tyto/       vendored from tyto-brand -- do not hand-edit
+src/styles/tyto/       vendored from tyto-brand, do not hand-edit
 public/                  served at the domain root: favicons, OG image, CNAME,
                          robots.txt, logos
 ```
@@ -142,19 +144,24 @@ Match what is already there. These describe the existing code, not an aspiration
 - **Plain `<img>` for images.** `astro:assets` and `<Image />` are not used anywhere in `src/`.
 - **No live or dynamic data fetching.** Fully static: no ISR, no client-side polling, no runtime API
   calls.
-- **No em dashes in generated copy or comments.** Use commas, colons, semicolons or periods.
+- **No em dashes anywhere in this repo**, with one exception: `LICENSE` and `NOTICE` are legal
+  text and are never edited for style. Use commas, colons, semicolons or periods. En dashes in
+  the copyright year ranges are correct and stay.
 
 ## Deployment
 
 GitHub Pages at the custom domain **tytoproject.org**, set by `public/CNAME`. `astro.config.mjs` sets
 `site: "https://tytoproject.org"` and deploys at the domain root, so there is no `base` path.
 
-- `.github/workflows/deploy-pages.yml` runs on push to `main` and on `workflow_dispatch`. It lints, format-checks
+- `.github/workflows/deploy-pages.yml` runs on push to `main` and on `workflow_dispatch`. It lints,
+  format-checks
   and builds before deploying, so a failure fails the deploy rather than publishing a broken site.
 - `.github/workflows/ci.yml` runs on `pull_request` into `main`. Lint, format check and build.
 
-Because a push to `main` publishes, treat `main` as a release branch: put changes on a `feat/`,
-`fix/` or `refactor/` topic branch and open a PR. **Pushing is a separate decision from committing.
+Work lands **directly on `main`**. Use a `feat/`, `fix/` or `refactor/` topic branch when a change
+wants isolation, but a fast-forward onto `main` is the normal path and no PR is required. Note what
+that costs: `ci.yml` runs only on `pull_request`, so a direct push is gated solely by the deploy
+workflow's own lint, format-check and build steps. **Pushing is a separate decision from committing.
 Never push unasked.**
 
 ## Security
@@ -172,7 +179,8 @@ This repository is public. Everything not ignored is world-readable once pushed.
 
 ## Before reporting a task complete
 
-Run `pnpm lint && pnpm format:check && pnpm typecheck`. CI runs `format:check` and so does the deploy
+Run `pnpm lint && pnpm format:check && pnpm typecheck`. CI runs `format:check` and so does the
+deploy
 workflow, so skipping it fails a deploy rather than a check. There is no test suite to run.
 
 ## Protected files
@@ -192,7 +200,8 @@ Do not modify these without an explicit instruction.
 ## Never
 
 - Reintroduce a client framework runtime, or server-rendered or containerized infrastructure
-  (Docker, Vercel, Terraform). This site is static-only.
+  for **this site** (Docker, Vercel, Terraform). It is static-only and deploys as static files.
+  Docker instructions for running the Tyto client are site copy and are expected.
 - Redeclare a design token locally to work around the design system.
 - Commit an `.env`, a key, a credential file, or anything under `.claude/` or `.local/`. This
   repository is public: everything not ignored is world-readable the moment it is pushed.
