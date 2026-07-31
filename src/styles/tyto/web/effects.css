@@ -93,8 +93,8 @@
 .cta-glass { background: var(--bg-card-strong); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border-strong); border-radius: var(--radius-xl); box-shadow: var(--shadow-glow); }
 
 /* ====================================================================
-   Cell system — geth-inspired bordered grid. Sharp corners, shared 1px
-   edges, documentary mono labels. The brand's structural signature.
+   Cell system — bordered grid. Sharp corners, shared 1px edges,
+   documentary mono labels. The brand's structural signature.
    ==================================================================== */
 .cell-grid { display: grid; gap: 1px; background: var(--border); border: 1px solid var(--border); }
 .cell-ty { background: var(--bg); padding: 2rem; }
