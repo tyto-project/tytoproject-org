@@ -8,6 +8,8 @@
 # open now. Machine-wide pnpm policy (the release-age gate) lives in pnpm's global
 # config and does not need a file in this repo.
 .npmrc
+.yarnrc
+.yarnrc.yml
 
 # astro
 .astro/
@@ -68,6 +70,9 @@ CLAUDE.local.md
 # Local pre-rebuild snapshots (rollback safety net, not repo history)
 
 # Planning & internal docs
+SESSION_NOTES.md
+PLANNING.md
+SCRATCH.md
 *.scratch.*
 *.draft.*
 
