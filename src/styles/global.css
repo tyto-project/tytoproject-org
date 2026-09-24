@@ -64,15 +64,16 @@
    rather than scoped because two components render family columns: the /networks
    NetworksSection and the guide's run step. Paired with src/data/network-families.ts.
 
-   The violet is a literal because the token layer has no violet role. It is the
-   only hardcoded color in this file; a candidate to raise with tyto-brand.
+   Both are tokens now. The violet used to be a literal with a note that the token
+   layer had no violet role; --ty-nebula was added for exactly this kind of second
+   accent, so that note is discharged rather than still open.
    ───────────────────────────────────────────────────────────────────────── */
 
 .family--pow {
-  --family-accent: var(--ty-green-3);
+  --family-accent: var(--ty-buff);
 }
 .family--pos {
-  --family-accent: #a78bfa;
+  --family-accent: var(--ty-nebula);
 }
 .family--default {
   --family-accent: var(--accent);

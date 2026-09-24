@@ -11,6 +11,6 @@
 @keyframes aurora-drift-3 { from { transform: translate(0,0); }             to { transform: translate(3%,-4%) scale(1.06); } }
 
 @keyframes badge-pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(214, 181, 107, 0.6); }
-    50%      { box-shadow: 0 0 0 6px rgba(214, 181, 107, 0); }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(214, 182, 108, 0.6); }
+    50%      { box-shadow: 0 0 0 6px rgba(214, 182, 108, 0); }
 }

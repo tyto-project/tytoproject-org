@@ -5,88 +5,101 @@
  * tokens/semantic.{dark,light}.json. Do not hand-edit — change the JSON
  * and regenerate, or the two will drift.
  *
- * Colors derived from tyto-hex-logo.png (pixel-sampled 2026-06-20).
+ * Colors derived from tyto-logo-wings.svg (pixel-sampled 2026-09-23); the day sky
+ * from tyto-logo-day.svg and the leaf, bark and tan from tyto-logo-branch.svg.
  */
 
 :root {
   /* Palette — raw brand values. Prefer a role token in components. */
-  --ty-green:       #1e4a2d;
-  --ty-green-2:     #2d6b40;
-  --ty-green-3:     #50a060;
-  --ty-green-char:  #60b040;
-  --ty-green-light: #70c080;
-  --ty-green-glow:  rgba(80, 160, 96, 0.35);
-  --ty-pink:        #c06060;
-  --ty-gold:        #b8964f;
-  --ty-gold-2:      #d6b56b;
-  --ty-ink:         #1a1f16;
-  --ty-ink-2:       #0f130d;
-  --ty-ivory:       #f5f3ed;
-  --ty-ivory-dim:   #c5c3b8;
+  --ty-indigo-deep: #12152e;
+  --ty-indigo:      #1a1e3d;
+  --ty-indigo-sky:  #2a3063;
+  --ty-cloud:       #3d4786;
+  --ty-sky-day:     #738dbf;
+  --ty-white:       #fefefe;
+  --ty-starlight:   #c8d4ee;
+  --ty-sky-light:   #9db4e0;
+  --ty-buff:        #d6b66c;
+  --ty-buff-light:  #ddc388;
+  --ty-buff-dark:   #a8863f;
+  --ty-aurora:      #4fd1c5;
+  --ty-comet:       #5fc9f0;
+  --ty-nebula:      #9d8df1;
+  --ty-ember:       #e07aa8;
+  --ty-mars:        #ff7a70;
+  --ty-cream:       #ede1c8;
+  --ty-cream-dim:   #b5ab96;
+  --ty-green:       #629c66;
+  --ty-brown:       #6a533f;
+  --ty-tan:         #cfbaa1;
+  --ty-ink:         #181715;
 
   /* Role tokens — dark, the default theme. */
-  --bg:             var(--ty-ink-2);
-  --bg-elev:        var(--ty-ink);
-  --bg-card:        rgba(80, 160, 96, 0.06);
-  --bg-card-strong: rgba(245, 243, 237, 0.04);
-  --border:         rgba(245, 243, 237, 0.1);
-  --border-strong:  rgba(245, 243, 237, 0.18);
-  --text:           var(--ty-ivory);
-  --text-muted:     var(--ty-ivory-dim);
-  --text-subtle:    rgba(245, 243, 237, 0.55);
-  --accent:         var(--ty-green-3);
-  --accent-soft:    rgba(80, 160, 96, 0.18);
-  --gold-soft:      rgba(214, 181, 107, 0.22);
+  --bg:             var(--ty-indigo-deep);
+  --bg-elev:        var(--ty-indigo);
+  --bg-card:        rgba(42, 48, 99, 0.06);
+  --bg-card-strong: rgba(200, 212, 238, 0.04);
+  --border:         rgba(200, 212, 238, 0.1);
+  --border-strong:  rgba(200, 212, 238, 0.18);
+  --text:           var(--ty-white);
+  --text-muted:     var(--ty-starlight);
+  --text-subtle:    var(--ty-sky-light);
+  --accent:         var(--ty-buff);
+  --accent-soft:    rgba(42, 48, 99, 0.18);
+  --gold-soft:      rgba(214, 182, 108, 0.22);
+  --on-accent:      #181715;
   --shadow-card:    0 30px 60px -30px rgba(0, 0, 0, 0.7);
-  --shadow-glow:    0 0 0 1px rgba(214, 181, 107, 0.1),
-                    0 24px 60px -30px rgba(80, 160, 96, 0.6);
+  --shadow-glow:    0 0 0 1px rgba(214, 182, 108, 0.1),
+                    0 24px 60px -30px rgba(42, 48, 99, 0.6);
 
   /* Semantic signal — not part of the raw palette. */
-  --color-success: #50a060;
-  --color-error:   #ef4444;
-  --color-warning: #d6b56b;
-  --color-info:    #38bdf8;
+  --color-success: #4fd1c5;
+  --color-error:   #ff7a70;
+  --color-warning: #d6b66c;
+  --color-info:    #5fc9f0;
 }
 
 /* Light theme, explicitly selected. */
 [data-theme="light"] {
-  --ty-green-3:     #2d6b40;
-  --bg:             #edf5ee;
-  --bg-elev:        #f5fbf5;
-  --bg-card:        rgba(45, 107, 64, 0.04);
+  --ty-buff:        #a8863f;
+  --bg:             #f7f3e9;
+  --bg-elev:        #fdfbf6;
+  --bg-card:        rgba(168, 134, 63, 0.04);
   --bg-card-strong: rgba(255, 255, 255, 0.7);
-  --border:         rgba(26, 31, 22, 0.12);
-  --border-strong:  rgba(26, 31, 22, 0.22);
-  --text:           var(--ty-ink);
-  --text-muted:     rgba(26, 31, 22, 0.72);
-  --text-subtle:    rgba(26, 31, 22, 0.55);
-  --accent:         var(--ty-green-2);
-  --accent-soft:    rgba(45, 107, 64, 0.1);
+  --border:         rgba(24, 23, 21, 0.12);
+  --border-strong:  rgba(24, 23, 21, 0.22);
+  --text:           var(--ty-indigo);
+  --text-muted:     rgba(24, 23, 21, 0.72);
+  --text-subtle:    rgba(24, 23, 21, 0.55);
+  --accent:         var(--ty-buff-dark);
+  --accent-soft:    rgba(168, 134, 63, 0.1);
   --gold-soft:      rgba(184, 150, 79, 0.2);
-  --shadow-card:    0 24px 60px -32px rgba(45, 107, 64, 0.3);
+  --on-accent:      #181715;
+  --shadow-card:    0 24px 60px -32px rgba(168, 134, 63, 0.3);
   --shadow-glow:    0 0 0 1px rgba(184, 150, 79, 0.18),
-                    0 24px 60px -30px rgba(45, 107, 64, 0.35);
+                    0 24px 60px -30px rgba(168, 134, 63, 0.35);
 }
 
 /* Light theme from OS preference, when none is explicitly set. :not([data-theme])
    keeps an explicit choice winning over the OS. Must match the block above. */
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]) {
-    --ty-green-3:     #2d6b40;
-    --bg:             #edf5ee;
-    --bg-elev:        #f5fbf5;
-    --bg-card:        rgba(45, 107, 64, 0.04);
+    --ty-buff:        #a8863f;
+    --bg:             #f7f3e9;
+    --bg-elev:        #fdfbf6;
+    --bg-card:        rgba(168, 134, 63, 0.04);
     --bg-card-strong: rgba(255, 255, 255, 0.7);
-    --border:         rgba(26, 31, 22, 0.12);
-    --border-strong:  rgba(26, 31, 22, 0.22);
-    --text:           var(--ty-ink);
-    --text-muted:     rgba(26, 31, 22, 0.72);
-    --text-subtle:    rgba(26, 31, 22, 0.55);
-    --accent:         var(--ty-green-2);
-    --accent-soft:    rgba(45, 107, 64, 0.1);
+    --border:         rgba(24, 23, 21, 0.12);
+    --border-strong:  rgba(24, 23, 21, 0.22);
+    --text:           var(--ty-indigo);
+    --text-muted:     rgba(24, 23, 21, 0.72);
+    --text-subtle:    rgba(24, 23, 21, 0.55);
+    --accent:         var(--ty-buff-dark);
+    --accent-soft:    rgba(168, 134, 63, 0.1);
     --gold-soft:      rgba(184, 150, 79, 0.2);
-    --shadow-card:    0 24px 60px -32px rgba(45, 107, 64, 0.3);
+    --on-accent:      #181715;
+    --shadow-card:    0 24px 60px -32px rgba(168, 134, 63, 0.3);
     --shadow-glow:    0 0 0 1px rgba(184, 150, 79, 0.18),
-                    0 24px 60px -30px rgba(45, 107, 64, 0.35);
+                    0 24px 60px -30px rgba(168, 134, 63, 0.35);
   }
 }
