@@ -1,0 +1,125 @@
+/**
+ * Tyto — the night scene, as CSS.
+ *
+ * The layers are SVGs in ../../scene/night/ and ../../scene/day/, built by
+ * scripts/scene.py. This is
+ * the web-side implementation: how to stack them behind a page, and the gradients
+ * that are cheaper as CSS than as a fetched file.
+ *
+ * WORKED EXAMPLE, NOT A PACKAGE — the same posture as the rest of reference/web/.
+ * Copy what you need. The paths below assume the scene/ tree is served from public/
+ * alongside; a real site will point them at wherever it serves them from.
+ */
+
+/* ---- the wash ------------------------------------------------------------
+   A night sky is not one colour. It is darkest overhead and lifts toward the
+   horizon, where the atmosphere in the line of sight is thickest. A flat fill
+   reads as paper; this reads as air, and it costs one gradient. */
+.sky-ty {
+  position: relative;
+  background:
+    linear-gradient(to bottom,
+      var(--ty-indigo-deep) 0%,
+      var(--ty-indigo)      52%,
+      var(--ty-indigo-sky)  86%,
+      var(--ty-cloud)       100%);
+  color: var(--text);
+  isolation: isolate;
+}
+
+/* ---- layers --------------------------------------------------------------
+   Each is a positioned pseudo-element or child so the page's own content can sit
+   above them. pointer-events: none throughout: a background must never eat a click. */
+.sky-ty__layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  z-index: 0;
+}
+.sky-ty__layer--stars    { background-image: url('/scene/night/stars.svg'); }
+.sky-ty__layer--band     { background-image: url('/scene/night/milky-way.svg'); }
+.sky-ty__layer--links    { background-image: url('/scene/night/constellation.svg'); }
+.sky-ty__layer--aurora   { background-image: url('/scene/night/aurora.svg'); }
+.sky-ty__layer--moon     { background-image: url('/scene/night/moon.svg'); }
+
+/* ---- day ------------------------------------------------------------------
+   The same seven slots at a different hour. Two of them have no daylight
+   equivalent and are simply absent: stars are not visible by day, and drawing the
+   constellation as something else would be inventing a second motif. */
+.sky-ty--day {
+  background:
+    linear-gradient(to bottom,
+      var(--ty-sky-day)   0%,
+      var(--ty-starlight) 46%,
+      #e6e6e0             82%,
+      #f7f3e9             100%);
+}
+.sky-ty__layer--clouds      { background-image: url('/scene/day/clouds.svg'); }
+.sky-ty__layer--brightening { background-image: url('/scene/day/brightening.svg'); }
+.sky-ty__layer--shafts      { background-image: url('/scene/day/shafts.svg'); }
+.sky-ty__layer--sun         { background-image: url('/scene/day/sun.svg'); }
+.sky-ty__layer--horizon-day {
+  background-image: url('/scene/day/horizon.svg');
+  background-position: bottom center;
+  background-size: 100% auto;
+}
+
+/* The landscape anchors to the BOTTOM and keeps its aspect: stretching a treeline
+   vertically is the one thing that makes it read as a texture instead of a place. */
+.sky-ty__layer--horizon {
+  background-image: url('/scene/night/horizon.svg');
+  background-position: bottom center;
+  background-size: 100% auto;
+}
+
+.sky-ty > :not(.sky-ty__layer) { position: relative; z-index: 1; }
+
+/* ---- a floor under type --------------------------------------------------
+   Type straight onto a starfield loses its ground. A soft scrim fixes it; a
+   keep-out rectangle does not, because it is a hole in the sky whose edges you
+   can see. Put this behind a text column, not behind the whole page. */
+.scrim-ty {
+  /* The ellipse must reach transparent INSIDE the element. A radial gradient sized
+     past its own box is clipped by that box into a visible straight edge -- measured
+     at 7.65 grey levels on the social card before it was caught, and the reason the
+     stops below close out at 100% rather than running past it. */
+  background: radial-gradient(ellipse 62% 68% at 44% 50%,
+    color-mix(in srgb, var(--ty-indigo-deep) 82%, transparent) 0%,
+    color-mix(in srgb, var(--ty-indigo-deep) 50%, transparent) 45%,
+    color-mix(in srgb, var(--ty-indigo-deep) 19%, transparent) 75%,
+    transparent 100%);
+}
+.scrim-ty--day {
+  background: radial-gradient(ellipse 62% 68% at 44% 50%,
+    color-mix(in srgb, #f7f3e9 86%, transparent) 0%,
+    color-mix(in srgb, #f7f3e9 56%, transparent) 45%,
+    color-mix(in srgb, #f7f3e9 21%, transparent) 75%,
+    transparent 100%);
+}
+
+/* ---- vignette ------------------------------------------------------------ */
+.vignette-ty {
+  background: radial-gradient(ellipse at center,
+    transparent 55%, rgba(0, 0, 0, 0.30) 100%);
+}
+
+/* ---- aurora, as a gradient ----------------------------------------------
+   For a band of colour rather than the drawn ribbons. RARE: the cosmic tier is the
+   one part of this palette that looks cheap the moment it is turned up. */
+.aurora-ty {
+  background:
+    radial-gradient(ellipse 30% 46% at 14% 76%,
+      color-mix(in srgb, var(--ty-aurora) 16%, transparent) 0%, transparent 70%),
+    radial-gradient(ellipse 26% 40% at 88% 70%,
+      color-mix(in srgb, var(--ty-nebula) 14%, transparent) 0%, transparent 70%);
+}
+
+/* ---- reduced motion ------------------------------------------------------
+   Nothing here animates by default. If a consumer animates a layer — a slow drift
+   on the band, a twinkle on the stars — it stops here. */
+@media (prefers-reduced-motion: reduce) {
+  .sky-ty__layer { animation: none !important; transition: none !important; }
+}
