@@ -135,7 +135,7 @@ Match what is there. These are descriptions of the existing code, not aspiration
 
     /* wrong: hardcoded literals */
     .card {
-      background: #1a1f16;
+      background: #12152e;
       border-radius: 8px;
     }
   </style>

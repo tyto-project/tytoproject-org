@@ -129,7 +129,7 @@ Match what is already there. These describe the existing code, not an aspiration
 
     /* wrong: hardcoded literals */
     .card {
-      background: #1a1f16;
+      background: #12152e;
       border-radius: 8px;
     }
   </style>
