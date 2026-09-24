@@ -119,9 +119,10 @@
 
       ctx!.clearRect(0, 0, logicalW, logicalH);
 
-      const cr = dark ? 80 : 45;
-      const cg = dark ? 160 : 107;
-      const cb = dark ? 96 : 64;
+      // Grid: --ty-starlight on dark, --ty-indigo-sky on light. Structure, not accent.
+      const cr = dark ? 200 : 42;
+      const cg = dark ? 212 : 48;
+      const cb = dark ? 238 : 99;
       const baseOpacity = dark ? 0.07 : 0.1;
       const waveOpacity = dark ? 0.24 : 0.2;
 
@@ -171,9 +172,12 @@
         }
       }
 
-      const glowColor = dark ? "rgba(112, 192, 128, 0.85)" : "rgba(80, 160, 96, 0.65)";
-      const nodeColor = dark ? "rgba(80, 160, 96, 0.70)" : "rgba(45, 107, 64, 0.55)";
-      const dimColor = dark ? "rgba(80, 160, 96, 0.32)" : "rgba(45, 107, 64, 0.28)";
+      // A pulse means a node is live, which is --ty-aurora's role in the palette
+      // rather than the accent's. Aurora is 1.68:1 on the light ground and unusable
+      // there, so light mode falls back to --ty-buff-dark, its own theme accent.
+      const glowColor = dark ? "rgba(79, 209, 197, 0.85)" : "rgba(168, 134, 63, 0.65)";
+      const nodeColor = dark ? "rgba(79, 209, 197, 0.70)" : "rgba(168, 134, 63, 0.55)";
+      const dimColor = dark ? "rgba(79, 209, 197, 0.32)" : "rgba(168, 134, 63, 0.28)";
 
       nodes.forEach((n, i) => {
         const pulse = pulses[i] ?? 0;
@@ -181,7 +185,7 @@
           const r = (3 + pulse * 4) / 2;
           const grad = ctx!.createRadialGradient(n.x, n.y, 0, n.x, n.y, r * 3);
           grad.addColorStop(0, glowColor);
-          grad.addColorStop(1, "rgba(112,192,128,0)");
+          grad.addColorStop(1, dark ? "rgba(79,209,197,0)" : "rgba(168,134,63,0)");
           ctx!.beginPath();
           ctx!.arc(n.x, n.y, r * 3, 0, Math.PI * 2);
           ctx!.fillStyle = grad;
