@@ -51,10 +51,15 @@
 .badge-violet { border-color: rgba(167, 139, 250, 0.45); background: rgba(139, 92, 246, 0.12); color: #c4b5fd; }
 
 /* ---- Code blocks ---------------------------------------------------- */
-.code-block { font-family: var(--font-mono); font-size: 0.8125rem; line-height: 1.7; background: rgba(0,0,0,0.35); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.25rem 1.5rem; overflow-x: auto; color: var(--ty-cream-dim); }
-.code-block .kw  { color: var(--ty-sky-day); }
+/* The code block stays dark in BOTH themes on purpose, so its four colours are
+   measured once against one ground instead of twice against two. It was
+   rgba(0,0,0,0.35) with light text: 8.41:1 on the dark page and 1.18:1 on the
+   light one, where the box composited to mid-grey under near-black text.
+   Against --ty-indigo-deep: body 12.03, .kw 8.56, .str 9.18, .cm 5.37. */
+.code-block { font-family: var(--font-mono); font-size: 0.8125rem; line-height: 1.7; background: var(--ty-indigo-deep); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.25rem 1.5rem; overflow-x: auto; color: var(--ty-starlight); }
+.code-block .kw  { color: var(--ty-sky-light); }
 .code-block .str { color: var(--ty-buff); }
-.code-block .cm  { color: var(--text-subtle); font-style: italic; }
+.code-block .cm  { color: var(--ty-sky-day); font-style: italic; }
 
 /* ---- Hero gradient + aurora blobs ----------------------------------- */
 /* ---- Hero wash — a night sky lifted by one warm light, no two-hue ramp -- */
