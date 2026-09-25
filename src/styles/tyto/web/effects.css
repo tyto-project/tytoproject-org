@@ -46,9 +46,13 @@
 
 /* ---- Badges --------------------------------------------------------- */
 .badge-ty { display: inline-flex; align-items: center; gap: 0.375rem; font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.04em; padding: 0.25rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-muted); }
-.badge-green  { border-color: rgba(98, 156, 102, 0.4);  background: rgba(98, 156, 102, 0.08);  color: var(--ty-green); }
-.badge-gold   { border-color: rgba(214, 182, 108, 0.4); background: rgba(214, 182, 108, 0.08); color: var(--ty-buff); }
-.badge-violet { border-color: rgba(167, 139, 250, 0.45); background: rgba(139, 92, 246, 0.12); color: #c4b5fd; }
+/* The line: a chip carrying a PALETTE colour brings the night ground with it, because
+   that is the only ground those colours are specified against. A chip on ROLE tokens
+   -- .badge-ty above -- stays themed, because role tokens swap and palette ones do not.
+   Against --ty-indigo-deep: green 5.52, buff 9.18, nebula 6.41. */
+.badge-green  { background: var(--ty-indigo-deep); border-color: rgba(98, 156, 102, 0.4);  color: var(--ty-green); }
+.badge-gold   { background: var(--ty-indigo-deep); border-color: rgba(214, 182, 108, 0.4); color: var(--ty-buff); }
+.badge-violet { background: var(--ty-indigo-deep); border-color: rgba(157, 141, 241, 0.45); color: var(--ty-nebula); }
 
 /* ---- Code blocks ---------------------------------------------------- */
 /* The code block stays dark in BOTH themes on purpose, so its four colours are
@@ -178,11 +182,19 @@
     .protocol-tags { padding: 0.75rem 1rem; }
 }
 .proto-tag { display: inline-flex; align-items: center; padding: 0.2rem 0.625rem; border-radius: 9999px; font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.03em; white-space: nowrap; border: 1px solid transparent; }
-.proto-tag--green  { border-color: rgba(98,156,102,0.40);  background: rgba(98,156,102,0.10); color: var(--ty-green); }
-.proto-tag--blue   { border-color: rgba(96,165,250,0.30);  background: rgba(59,130,246,0.08); color: #60a5fa; }
-.proto-tag--teal   { border-color: rgba(45,212,191,0.30);  background: rgba(20,184,166,0.08); color: #2dd4bf; }
-.proto-tag--violet { border-color: rgba(167,139,250,0.30); background: rgba(139,92,246,0.08); color: #a78bfa; }
-.proto-tag--amber  { border-color: rgba(214,182,108,0.40); background: rgba(214,182,108,0.08); color: var(--ty-buff); }
-.proto-tag--indigo { border-color: rgba(129,140,248,0.30); background: rgba(99,102,241,0.08);  color: #818cf8; }
-.proto-tag--orange { border-color: rgba(251,146,60,0.30);  background: rgba(249,115,22,0.08);  color: #fb923c; }
-.proto-tag--muted  { border-color: var(--border);          background: var(--bg-card);        color: var(--text-subtle); }
+/* These carry the Cosmic tier, which the palette specifies against the night ground
+   ONLY. Measured over the light page every one of them lands between 1.6:1 and 2.7:1
+   -- the two already on tyto tokens included, and the Tailwind literals they replace
+   were no better, so swapping the colours alone would have fixed nothing. So the chip
+   brings its ground with it: a fixed dark pill in both themes, where the worst of the
+   eight is 5.37:1. Same decision as the code block, and the same reason.
+   Each colour is chosen by what the tag MEANS, not by matching the old hue. */
+.proto-tag         { background: var(--ty-indigo-deep); }
+.proto-tag--green  { border-color: rgba(98,156,102,0.40);  color: var(--ty-green); }      /* proof-of-work        5.52 */
+.proto-tag--blue   { border-color: rgba(95,201,240,0.35);  color: var(--ty-comet); }      /* wire protocol, info  9.47 */
+.proto-tag--teal   { border-color: rgba(79,209,197,0.35);  color: var(--ty-aurora); }     /* sync: live/healthy   9.60 */
+.proto-tag--violet { border-color: rgba(157,141,241,0.35); color: var(--ty-nebula); }     /* Engine API / CL      6.41 */
+.proto-tag--amber  { border-color: rgba(214,182,108,0.40); color: var(--ty-buff); }       /* RPC and interfaces   9.18 */
+.proto-tag--indigo { border-color: rgba(157,180,224,0.35); color: var(--ty-sky-light); }  /* proof-of-authority   8.56 */
+.proto-tag--orange { border-color: rgba(224,122,168,0.35); color: var(--ty-ember); }      /* observability        6.41 */
+.proto-tag--muted  { border-color: rgba(115,141,191,0.30); color: var(--ty-sky-day); }    /* planned              5.37 */
