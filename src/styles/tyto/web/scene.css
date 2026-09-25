@@ -12,7 +12,7 @@
  */
 
 /* ---- the wash ------------------------------------------------------------
-   A night sky is not one colour. It is darkest overhead and lifts toward the
+   A night sky is not one color. It is darkest overhead and lifts toward the
    horizon, where the atmosphere in the line of sight is thickest. A flat fill
    reads as paper; this reads as air, and it costs one gradient. */
 .sky-ty {
@@ -107,7 +107,7 @@
 }
 
 /* ---- aurora, as a gradient ----------------------------------------------
-   For a band of colour rather than the drawn ribbons. RARE: the cosmic tier is the
+   For a band of color rather than the drawn ribbons. RARE: the cosmic tier is the
    one part of this palette that looks cheap the moment it is turned up. */
 .aurora-ty {
   background:

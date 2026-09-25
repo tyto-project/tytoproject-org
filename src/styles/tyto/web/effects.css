@@ -46,8 +46,8 @@
 
 /* ---- Badges --------------------------------------------------------- */
 .badge-ty { display: inline-flex; align-items: center; gap: 0.375rem; font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.04em; padding: 0.25rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-muted); }
-/* The line: a chip carrying a PALETTE colour brings the night ground with it, because
-   that is the only ground those colours are specified against. A chip on ROLE tokens
+/* The line: a chip carrying a PALETTE color brings the night ground with it, because
+   that is the only ground those colors are specified against. A chip on ROLE tokens
    -- .badge-ty above -- stays themed, because role tokens swap and palette ones do not.
    Against --ty-indigo-deep: green 5.52, buff 9.18, nebula 6.41. */
 .badge-green  { background: var(--ty-indigo-deep); border-color: rgba(98, 156, 102, 0.4);  color: var(--ty-green); }
@@ -55,7 +55,7 @@
 .badge-violet { background: var(--ty-indigo-deep); border-color: rgba(157, 141, 241, 0.45); color: var(--ty-nebula); }
 
 /* ---- Code blocks ---------------------------------------------------- */
-/* The code block stays dark in BOTH themes on purpose, so its four colours are
+/* The code block stays dark in BOTH themes on purpose, so its four colors are
    measured once against one ground instead of twice against two. It was
    rgba(0,0,0,0.35) with light text: 8.41:1 on the dark page and 1.18:1 on the
    light one, where the box composited to mid-grey under near-black text.
@@ -185,10 +185,10 @@
 /* These carry the Cosmic tier, which the palette specifies against the night ground
    ONLY. Measured over the light page every one of them lands between 1.6:1 and 2.7:1
    -- the two already on tyto tokens included, and the Tailwind literals they replace
-   were no better, so swapping the colours alone would have fixed nothing. So the chip
+   were no better, so swapping the colors alone would have fixed nothing. So the chip
    brings its ground with it: a fixed dark pill in both themes, where the worst of the
    eight is 5.37:1. Same decision as the code block, and the same reason.
-   Each colour is chosen by what the tag MEANS, not by matching the old hue. */
+   Each color is chosen by what the tag MEANS, not by matching the old hue. */
 .proto-tag         { background: var(--ty-indigo-deep); }
 .proto-tag--green  { border-color: rgba(98,156,102,0.40);  color: var(--ty-green); }      /* proof-of-work        5.52 */
 .proto-tag--blue   { border-color: rgba(95,201,240,0.35);  color: var(--ty-comet); }      /* wire protocol, info  9.47 */
