@@ -44,7 +44,7 @@ within days.
 | Framework       | Astro 7, `output: "static"`                                                     | `astro.config.mjs`                         |
 | Integration     | `@astrojs/sitemap`                                                              | `astro.config.mjs` `integrations`          |
 | Format          | Prettier with `prettier-plugin-astro` (the official Astro plugin)               | `.prettierrc.json`                         |
-| Styling         | Vendored from `tyto-brand` into `src/styles/tyto/`, not a dependency        | imported by `src/styles/global.css`        |
+| Styling         | Vendored from `tyto-brand` into `src/styles/tyto/`, not a dependency            | imported by `src/styles/global.css`        |
 | Language        | TypeScript 6, `extends: astro/tsconfigs/strict`, path alias `@/*` to `src/*`    | `tsconfig.json`                            |
 | Type check      | `@astrojs/check`, which is what `astro check` runs                              | `package.json` devDependencies             |
 | Lint            | ESLint 10 flat config, `eslint-plugin-astro` plus `@typescript-eslint`          | `eslint.config.mjs`                        |

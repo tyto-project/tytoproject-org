@@ -383,10 +383,10 @@ tyto import-era1 \\
               <h3 class="ops__block-title">Garbage collection is measured, not assumed</h3>
               <p class="ops__block-body">
                 The usual objection to running a node on the JVM is collector pauses. Rather than
-                argue about it, Tyto exports GC pause time and the fraction of wall-clock time
-                spent collecting, sampled during state healing and reported alongside the sync
-                metrics. A fraction climbing toward 0.2 means the sync is GC-bound, and that it is
-                worth changing the heap before changing the disk.
+                argue about it, Tyto exports GC pause time and the fraction of wall-clock time spent
+                collecting, sampled during state healing and reported alongside the sync metrics. A
+                fraction climbing toward 0.2 means the sync is GC-bound, and that it is worth
+                changing the heap before changing the disk.
               </p>
               <p class="ops__block-body">
                 That turns a runtime property into an operational reading. The alternative is

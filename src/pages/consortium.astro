@@ -112,10 +112,10 @@ const CONSENSUS: readonly (readonly string[])[] = [
               <span class="cell-label">The seam</span>
               <h2 class="section-title cons__title">Choosing a consensus algorithm</h2>
               <p class="section-subtitle">
-                Consensus sits behind one interface in Tyto's top layer, chosen per deployment.
-                The same property that lets a node run Proof-of-Work on one network and
-                Proof-of-Stake on another lets it run a Proof-of-Authority network with a known
-                validator set, from the same binary and in the same process.
+                Consensus sits behind one interface in Tyto's top layer, chosen per deployment. The
+                same property that lets a node run Proof-of-Work on one network and Proof-of-Stake
+                on another lets it run a Proof-of-Authority network with a known validator set, from
+                the same binary and in the same process.
               </p>
             </div>
           </FadeIn>
@@ -228,9 +228,9 @@ const CONSENSUS: readonly (readonly string[])[] = [
                 Running a private and a public network together
               </h2>
               <p class="section-subtitle">
-                Each network Tyto runs is isolated: its own state, its own metrics registry, its
-                own configuration, supervised independently. A consortium chain and a public network
-                can therefore run in one process without sharing storage or contending for the same
+                Each network Tyto runs is isolated: its own state, its own metrics registry, its own
+                configuration, supervised independently. A consortium chain and a public network can
+                therefore run in one process without sharing storage or contending for the same
                 dispatchers, which is one deployment to secure and audit instead of two.
               </p>
               <p class="section-subtitle">
