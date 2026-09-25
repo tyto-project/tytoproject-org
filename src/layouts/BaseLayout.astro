@@ -156,9 +156,14 @@ const jsonLdSite = {
     <meta name="format-detection" content="telephone=no" />
 
     {
-      /* No SVG icon by design. Browsers prefer it over the .ico, so only add one
-        back if it is a genuine vector. */
+      /* The SVG leads because browsers prefer it and it is NOW a genuine vector:
+        the badge was re-traced, so the condition this block used to fail is met.
+        It is the simplified mark, not the full badge -- below about 48px the wings
+        and facial disc merge into one light mass -- so it is the right art at the
+        sizes a favicon is actually seen at, and it stays sharp above them. The .ico
+        and PNGs remain for anything that ignores an SVG rel="icon". */
     }
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
     <link rel="icon" href="/favicon-16x16.png" sizes="16x16" type="image/png" />
     <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png" />
